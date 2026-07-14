@@ -1,0 +1,23 @@
+@model IEnumerable<Quiz>
+@{
+    ViewData["Title"] = "Published Quizzes";
+}
+<h1 class="h3 mb-4">Published Quizzes</h1>
+<div class="row g-3">
+@foreach (var quiz in Model)
+{
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">@quiz.Title</h2>
+                <p class="text-muted mb-2">@quiz.Subject - @quiz.Topic</p>
+                <span class="badge text-bg-light border">@quiz.Difficulty</span>
+                <span class="badge text-bg-light border">@quiz.Questions.Count questions</span>
+            </div>
+            <div class="card-footer bg-white border-0 pb-3">
+                <a class="btn btn-outline-primary w-100" asp-action="Details" asp-route-id="@quiz.Id">Details</a>
+            </div>
+        </div>
+    </div>
+}
+</div>

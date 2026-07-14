@@ -1,0 +1,30 @@
+@model AttemptQuizViewModel
+@{
+    ViewData["Title"] = "Attempt Quiz";
+}
+<h1 class="h3 mb-4">@Model.QuizTitle</h1>
+<form asp-action="Attempt" method="post">
+    <input asp-for="QuizId" type="hidden" />
+    <input asp-for="QuizTitle" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    @for (var i = 0; i < Model.Questions.Count; i++)
+    {
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <input asp-for="Questions[i].QuestionId" type="hidden" />
+                <input asp-for="Questions[i].Text" type="hidden" />
+                <h2 class="h5">@(i + 1). @Model.Questions[i].Text</h2>
+                @foreach (var option in Model.Questions[i].Options)
+                {
+                    <div class="form-check my-2">
+                        <input class="form-check-input" type="radio" asp-for="Questions[i].SelectedOptionId" value="@option.Id" id="q@Model.Questions[i].QuestionId-@option.Id" />
+                        <label class="form-check-label" for="q@Model.Questions[i].QuestionId-@option.Id"><strong>@option.Label.</strong> @option.Text</label>
+                    </div>
+                }
+                <span asp-validation-for="Questions[i].SelectedOptionId" class="text-danger"></span>
+            </div>
+        </div>
+    }
+    <button type="submit" class="btn btn-primary">Submit Quiz</button>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

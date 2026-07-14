@@ -1,0 +1,35 @@
+@model IEnumerable<Quiz>
+@{
+    ViewData["Title"] = "My Quizzes";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">My Quizzes</h1>
+    <div>
+        <a class="btn btn-outline-primary" asp-action="Create">Create Quiz</a>
+        <a class="btn btn-primary" asp-action="Generate">Generate with AI</a>
+    </div>
+</div>
+<div class="table-responsive card shadow-sm">
+    <table class="table table-hover mb-0 align-middle">
+        <thead><tr><th>Title</th><th>Subject</th><th>Questions</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+        <tbody>
+        @foreach (var quiz in Model)
+        {
+            <tr>
+                <td>@quiz.Title</td>
+                <td>@quiz.Subject</td>
+                <td>@quiz.Questions.Count</td>
+                <td><span class="badge @(quiz.IsPublished ? "text-bg-success" : "text-bg-secondary")">@(quiz.IsPublished ? "Published" : "Draft")</span></td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@quiz.Id">Edit</a>
+                    @if (!quiz.IsPublished)
+                    {
+                        <form asp-action="Publish" asp-route-id="@quiz.Id" method="post" class="d-inline"><button class="btn btn-sm btn-outline-success">Publish</button></form>
+                    }
+                    <form asp-action="Delete" asp-route-id="@quiz.Id" method="post" class="d-inline"><button class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this quiz?')">Delete</button></form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,24 @@
+@model StudentAttempt
+@{
+    ViewData["Title"] = "Quiz Result";
+}
+<div class="card shadow-sm mb-4">
+    <div class="card-body text-center">
+        <h1 class="h3">@Model.Quiz?.Title Result</h1>
+        <div class="display-5 text-primary fw-semibold">@Model.Result?.Percentage%</div>
+        <p class="mb-0">Score: @Model.Result?.TotalScore / @Model.Result?.TotalQuestions</p>
+        <p class="text-muted">Correct: @Model.Result?.CorrectAnswers | Wrong: @Model.Result?.WrongAnswers</p>
+    </div>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="h5 mb-3">Answers</h2>
+        @foreach (var answer in Model.StudentAnswers)
+        {
+            <div class="border-bottom py-2">
+                <div>@answer.Question?.Text</div>
+                <div class="small @(answer.IsCorrect ? "text-success" : "text-danger")">Selected: @(answer.SelectedOption?.Label ?? "None") - @(answer.IsCorrect ? "Correct" : "Wrong")</div>
+            </div>
+        }
+    </div>
+</div>

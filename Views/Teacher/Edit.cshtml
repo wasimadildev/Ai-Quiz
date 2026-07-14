@@ -1,0 +1,12 @@
+@model QuizFormViewModel
+@{
+    ViewData["Title"] = "Edit Quiz";
+}
+<h1 class="h3 mb-4">Edit Quiz</h1>
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="card shadow-sm"><div class="card-body">
+    <input asp-for="Id" type="hidden" />
+    <partial name="_QuizForm" model="Model" />
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a class="btn btn-outline-secondary" asp-action="Quizzes">Cancel</a>
+</div></form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

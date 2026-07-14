@@ -1,0 +1,72 @@
+@using Microsoft.AspNetCore.Identity
+@using AiQuiz.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AI Quiz</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+            <div class="container">
+                <a class="navbar-brand fw-semibold" asp-controller="Home" asp-action="Index">AI Quiz</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Quizzes" asp-action="Index">Quizzes</a></li>
+                        @if (User.IsInRole("Teacher"))
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Teacher" asp-action="Dashboard">Teacher Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Teacher" asp-action="Quizzes">My Quizzes</a></li>
+                        }
+                        @if (User.IsInRole("Student"))
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Student" asp-action="Dashboard">Student Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Student" asp-action="Attempts">Attempts</a></li>
+                        }
+                    </ul>
+                    <ul class="navbar-nav ms-auto">
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <li class="nav-item"><span class="navbar-text text-white-50 me-3">@User.Identity?.Name</span></li>
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post">
+                                    <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Login">Login</a></li>
+                            <li class="nav-item"><a class="btn btn-light btn-sm ms-lg-2" asp-controller="Account" asp-action="Register">Register</a></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main class="container py-4">
+        @if (TempData["SuccessMessage"] is string message)
+        {
+            <div class="alert alert-success">@message</div>
+        }
+        @RenderBody()
+    </main>
+    <footer class="border-top py-3 mt-auto text-muted">
+        <div class="container small">&copy; 2026 - AI Quiz Generator & Auto-Grading System</div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,11 @@
+@model QuizFormViewModel
+@{
+    ViewData["Title"] = "Create Quiz";
+}
+<h1 class="h3 mb-4">Create Quiz</h1>
+<form asp-action="Create" method="post" class="card shadow-sm"><div class="card-body">
+    <partial name="_QuizForm" model="Model" />
+    <button type="submit" class="btn btn-primary">Save Quiz</button>
+    <a class="btn btn-outline-secondary" asp-action="Quizzes">Cancel</a>
+</div></form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

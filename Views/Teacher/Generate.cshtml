@@ -1,0 +1,27 @@
+@model GenerateQuizViewModel
+@{
+    ViewData["Title"] = "Generate Quiz";
+}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm"><div class="card-body p-4">
+            <h1 class="h3 mb-3">Generate Quiz using AI</h1>
+            <form asp-action="Generate" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                <div class="mb-3"><label asp-for="Title" class="form-label"></label><input asp-for="Title" class="form-control" /><span asp-validation-for="Title" class="text-danger"></span></div>
+                <div class="row">
+                    <div class="col-md-6 mb-3"><label asp-for="Subject" class="form-label"></label><input asp-for="Subject" class="form-control" /><span asp-validation-for="Subject" class="text-danger"></span></div>
+                    <div class="col-md-6 mb-3"><label asp-for="Topic" class="form-label"></label><input asp-for="Topic" class="form-control" /><span asp-validation-for="Topic" class="text-danger"></span></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3"><label asp-for="Difficulty" class="form-label"></label><select asp-for="Difficulty" class="form-select"><option>Easy</option><option>Medium</option><option>Hard</option></select></div>
+                    <div class="col-md-4 mb-3"><label asp-for="NumberOfQuestions" class="form-label"></label><input asp-for="NumberOfQuestions" class="form-control" /></div>
+                    <div class="col-md-4 mb-3"><label asp-for="QuestionType" class="form-label"></label><input asp-for="QuestionType" class="form-control" readonly /></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Generate</button>
+                <a class="btn btn-outline-secondary" asp-action="Quizzes">Cancel</a>
+            </form>
+        </div></div>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -1,0 +1,22 @@
+@model IEnumerable<StudentAttempt>
+@{
+    ViewData["Title"] = "Previous Attempts";
+}
+<h1 class="h3 mb-4">Previous Attempts</h1>
+<div class="table-responsive card shadow-sm">
+    <table class="table table-hover mb-0 align-middle">
+        <thead><tr><th>Quiz</th><th>Date</th><th>Score</th><th>Percentage</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var attempt in Model)
+        {
+            <tr>
+                <td>@attempt.Quiz?.Title</td>
+                <td>@attempt.SubmittedAt?.ToLocalTime().ToString("g")</td>
+                <td>@attempt.Result?.TotalScore / @attempt.Result?.TotalQuestions</td>
+                <td>@attempt.Result?.Percentage%</td>
+                <td class="text-end"><a class="btn btn-sm btn-outline-primary" asp-action="Result" asp-route-id="@attempt.Id">View</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,30 @@
+@model QuizFormViewModel
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<div class="row">
+    <div class="col-md-6 mb-3"><label asp-for="Title" class="form-label"></label><input asp-for="Title" class="form-control" /><span asp-validation-for="Title" class="text-danger"></span></div>
+    <div class="col-md-6 mb-3"><label asp-for="Subject" class="form-label"></label><input asp-for="Subject" class="form-control" /><span asp-validation-for="Subject" class="text-danger"></span></div>
+</div>
+<div class="row">
+    <div class="col-md-6 mb-3"><label asp-for="Topic" class="form-label"></label><input asp-for="Topic" class="form-control" /><span asp-validation-for="Topic" class="text-danger"></span></div>
+    <div class="col-md-3 mb-3"><label asp-for="Difficulty" class="form-label"></label><select asp-for="Difficulty" class="form-select"><option>Easy</option><option>Medium</option><option>Hard</option></select></div>
+    <div class="col-md-3 mb-3 d-flex align-items-end"><div class="form-check"><input asp-for="IsPublished" class="form-check-input" /><label asp-for="IsPublished" class="form-check-label">Published</label></div></div>
+</div>
+<hr />
+<h2 class="h5 mb-3">Questions</h2>
+@for (var i = 0; i < Model.Questions.Count; i++)
+{
+    <div class="border rounded p-3 mb-3">
+        <input asp-for="Questions[i].Id" type="hidden" />
+        <div class="mb-3"><label asp-for="Questions[i].Text" class="form-label"></label><textarea asp-for="Questions[i].Text" class="form-control" rows="2"></textarea><span asp-validation-for="Questions[i].Text" class="text-danger"></span></div>
+        <div class="row">
+            <div class="col-md-6 mb-3"><label asp-for="Questions[i].OptionA" class="form-label"></label><input asp-for="Questions[i].OptionA" class="form-control" /><span asp-validation-for="Questions[i].OptionA" class="text-danger"></span></div>
+            <div class="col-md-6 mb-3"><label asp-for="Questions[i].OptionB" class="form-label"></label><input asp-for="Questions[i].OptionB" class="form-control" /><span asp-validation-for="Questions[i].OptionB" class="text-danger"></span></div>
+            <div class="col-md-6 mb-3"><label asp-for="Questions[i].OptionC" class="form-label"></label><input asp-for="Questions[i].OptionC" class="form-control" /><span asp-validation-for="Questions[i].OptionC" class="text-danger"></span></div>
+            <div class="col-md-6 mb-3"><label asp-for="Questions[i].OptionD" class="form-label"></label><input asp-for="Questions[i].OptionD" class="form-control" /><span asp-validation-for="Questions[i].OptionD" class="text-danger"></span></div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3"><label asp-for="Questions[i].CorrectAnswer" class="form-label"></label><select asp-for="Questions[i].CorrectAnswer" class="form-select"><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
+            <div class="col-md-8 mb-3"><label asp-for="Questions[i].Explanation" class="form-label"></label><input asp-for="Questions[i].Explanation" class="form-control" /></div>
+        </div>
+    </div>
+}

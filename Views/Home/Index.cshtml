@@ -1,0 +1,28 @@
+@{
+    ViewData["Title"] = "Home";
+}
+<section class="py-5">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+            <h1 class="display-5 fw-semibold">AI Quiz Generator & Auto-Grading System</h1>
+            <p class="lead text-muted">Teachers create quizzes manually or with OpenAI, publish them, and students answer MCQs online with instant grading.</p>
+            <div class="d-flex gap-2 flex-wrap">
+                <a class="btn btn-primary btn-lg" asp-controller="Account" asp-action="Register">Get Started</a>
+                <a class="btn btn-outline-primary btn-lg" asp-controller="Quizzes" asp-action="Index">View Quizzes</a>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 bg-light">
+                <div class="card-body p-4">
+                    <h2 class="h5">Project Features</h2>
+                    <ul class="mb-0">
+                        <li>ASP.NET Core MVC and Identity roles</li>
+                        <li>SQL Server with Entity Framework Core</li>
+                        <li>OpenAI quiz generation</li>
+                        <li>Automatic MCQ grading and results</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

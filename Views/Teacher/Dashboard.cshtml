@@ -1,0 +1,16 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Teacher Dashboard";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Teacher Dashboard</h1>
+    <div>
+        <a class="btn btn-outline-primary" asp-action="Create">Create Quiz</a>
+        <a class="btn btn-primary" asp-action="Generate">Generate with AI</a>
+    </div>
+</div>
+<div class="row g-3">
+    <div class="col-md-4"><div class="card stat-card"><div class="card-body"><div class="text-muted">Total Quizzes</div><div class="display-6">@Model.TotalQuizzes</div></div></div></div>
+    <div class="col-md-4"><div class="card stat-card"><div class="card-body"><div class="text-muted">Published</div><div class="display-6">@Model.PublishedQuizzes</div></div></div></div>
+    <div class="col-md-4"><div class="card stat-card"><div class="card-body"><div class="text-muted">Student Attempts</div><div class="display-6">@Model.Attempts</div></div></div></div>
+</div>
