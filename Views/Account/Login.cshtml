@@ -3,28 +3,42 @@
     ViewData["Title"] = "Login";
 }
 <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h1 class="h3 mb-3">Login</h1>
+    <div class="col-md-5 col-lg-4">
+        <div class="card auth-card">
+            <div class="card-body">
+                <div class="auth-header">
+                    <div class="auth-icon"><i class="fas fa-sign-in-alt"></i></div>
+                    <h1>Welcome Back</h1>
+                    <p>Sign in to your account</p>
+                </div>
                 <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                     <div class="mb-3">
                         <label asp-for="Email" class="form-label"></label>
-                        <input asp-for="Email" class="form-control" />
+                        <div style="position:relative;">
+                            <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--gray-400);"><i class="fas fa-envelope"></i></span>
+                            <input asp-for="Email" class="form-control" style="padding-left:2.5rem;" placeholder="you@example.com" />
+                        </div>
                         <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
                         <label asp-for="Password" class="form-label"></label>
-                        <input asp-for="Password" class="form-control" />
+                        <div style="position:relative;">
+                            <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--gray-400);"><i class="fas fa-lock"></i></span>
+                            <input asp-for="Password" class="form-control" style="padding-left:2.5rem;" placeholder="Enter password" />
+                        </div>
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
-                    <div class="form-check mb-3">
+                    <div class="form-check mb-4">
                         <input asp-for="RememberMe" class="form-check-input" />
-                        <label asp-for="RememberMe" class="form-check-label"></label>
+                        <label asp-for="RememberMe" class="form-check-label" style="font-size:0.9rem;"></label>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                    <button type="submit" class="btn btn-primary w-100 btn-lg"><i class="fas fa-arrow-right-to-bracket me-2"></i>Sign In</button>
                 </form>
+                <div class="text-center mt-4">
+                    <span style="color:var(--gray-500); font-size:0.9rem;">Don't have an account?</span>
+                    <a asp-action="Register" style="font-weight:600; font-size:0.9rem;">Create one</a>
+                </div>
             </div>
         </div>
     </div>

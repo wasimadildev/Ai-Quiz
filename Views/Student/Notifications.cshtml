@@ -1,0 +1,85 @@
+@model IEnumerable<AiQuiz.Models.StudentNotification>
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<div class="dashboard-header">
+    <h1><i class="fas fa-bell me-2 text-gradient"></i>Notifications</h1>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <div class="empty-icon"><i class="fas fa-bell-slash"></i></div>
+        <h3>No notifications</h3>
+        <p>You're all caught up! Check back later for updates.</p>
+    </div>
+}
+else
+{
+    <div class="card animate-fadeInUp" style="border:none; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); max-width:800px;">
+        <div class="card-body p-0">
+            @foreach (var notif in Model)
+            {
+                var (iconClass, iconBg) = notif.Type switch
+                {
+                    "QuizAssigned" => ("fas fa-clipboard-list", "background:rgba(59,130,246,0.1); color:var(--info);"),
+                    "QuizPublished" => ("fas fa-globe", "background:rgba(16,185,129,0.1); color:var(--success);"),
+                    "QuizCancelled" => ("fas fa-ban", "background:rgba(239,68,68,0.1); color:var(--danger);"),
+                    "ResultPublished" => ("fas fa-chart-bar", "background:rgba(99,102,241,0.1); color:var(--primary);"),
+                    "FeedbackAvailable" => ("fas fa-comment", "background:rgba(249,115,22,0.1); color:#f97316;"),
+                    _ => ("fas fa-info-circle", "background:var(--gray-100); color:var(--gray-500);")
+                };
+
+                var timeAgo = DateTime.UtcNow - notif.CreatedAt;
+                string timeText = timeAgo.TotalMinutes < 1 ? "Just now"
+                    : timeAgo.TotalMinutes < 60 ? $"{(int)timeAgo.TotalMinutes}m ago"
+                    : timeAgo.TotalHours < 24 ? $"{(int)timeAgo.TotalHours}h ago"
+                    : $"{(int)timeAgo.TotalDays}d ago";
+
+                <div class="notification-item @(notif.IsRead ? "" : "unread")"
+                     style="padding:1rem 1.5rem; border-bottom:1px solid var(--gray-100); display:flex; align-items:flex-start; gap:1rem; cursor:pointer; transition: background var(--transition-fast); @(notif.IsRead ? "" : "border-left:3px solid var(--info);")"
+                     onclick="markAsRead(@notif.Id, this)"
+                     data-notif-id="@notif.Id">
+                    <div style="width:40px; height:40px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; @iconBg">
+                        <i class="@iconClass"></i>
+                    </div>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-weight:600; font-size:0.95rem; color:var(--gray-800); margin-bottom:0.15rem;">@notif.Title</div>
+                        <div style="font-size:0.85rem; color:var(--gray-500); line-height:1.5;">@notif.Message</div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.25rem; flex-shrink:0;">
+                        <span style="font-size:0.75rem; color:var(--gray-400); white-space:nowrap;">@timeText</span>
+                        @if (!notif.IsRead)
+                        {
+                            <span style="width:8px; height:8px; border-radius:50%; background:var(--info);"></span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<style>
+    .notification-item:hover { background: var(--gray-50); }
+</style>
+
+@section Scripts {
+    <script>
+        function markAsRead(id, el) {
+            fetch('/Student/MarkNotificationRead', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notificationId: id })
+            }).then(function(r) {
+                if (r.ok) {
+                    el.classList.remove('unread');
+                    el.style.borderLeft = '3px solid transparent';
+                    const dot = el.querySelector('span:last-child');
+                    if (dot && dot.style.background === 'var(--info)') dot.remove();
+                }
+            }).catch(function() {});
+        }
+    </script>
+}

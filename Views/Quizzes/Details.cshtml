@@ -2,26 +2,52 @@
 @{
     ViewData["Title"] = "Quiz Details";
 }
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-        <h1 class="h3">@Model.Title</h1>
-        <p class="text-muted mb-2">@Model.Subject - @Model.Topic</p>
-        <span class="badge text-bg-light border">@Model.Difficulty</span>
-        <span class="badge text-bg-light border">@Model.Questions.Count questions</span>
-        @if (User.IsInRole("Student"))
-        {
-            <div class="mt-3"><a class="btn btn-primary" asp-controller="Student" asp-action="Attempt" asp-route-id="@Model.Id">Start Quiz</a></div>
-        }
+<div class="card animate-fadeInUp" style="border:none; border-radius:var(--radius-xl); box-shadow:var(--shadow-md); margin-bottom:2rem; overflow:hidden;">
+    <div style="background:var(--gradient-hero); padding:2.5rem 2rem; color:white; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:-30%; right:-10%; width:300px; height:300px; background:radial-gradient(circle, rgba(139,92,246,0.3) 0%, transparent 70%); border-radius:50%;"></div>
+        <div style="position:relative; z-index:1;">
+            <h1 style="font-size:1.75rem; font-weight:800; color:white; margin-bottom:0.5rem;">@Model.Title</h1>
+            <p style="color:rgba(255,255,255,0.7); margin-bottom:1rem;"><i class="fas fa-book me-1"></i>@Model.Subject &mdash; @Model.Topic</p>
+            <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                <span class="badge" style="background:rgba(255,255,255,0.15); color:white; padding:0.4rem 1rem; font-size:0.8rem;">@Model.Difficulty</span>
+                <span class="badge" style="background:rgba(255,255,255,0.15); color:white; padding:0.4rem 1rem; font-size:0.8rem;"><i class="fas fa-circle-question me-1"></i>@Model.Questions.Count questions</span>
+                @if (Model.Settings != null)
+                {
+                    <span class="badge" style="background:rgba(255,255,255,0.15); color:white; padding:0.4rem 1rem; font-size:0.8rem;"><i class="fas fa-clock me-1"></i>@Model.Settings.TimeLimitMinutes min</span>
+                    <span class="badge" style="background:rgba(255,255,255,0.15); color:white; padding:0.4rem 1rem; font-size:0.8rem;"><i class="fas fa-check-circle me-1"></i>Pass: @Model.Settings.PassingPercentage%</span>
+                }
+            </div>
+            @if (User.IsInRole("Student"))
+            {
+                <div class="mt-3">
+                    <a class="btn btn-light btn-lg" asp-controller="Student" asp-action="Attempt" asp-route-id="@Model.Id"><i class="fas fa-play me-2"></i>Start Quiz</a>
+                </div>
+            }
+            @if (User.IsInRole("Teacher"))
+            {
+                <div class="mt-3">
+                    <a class="btn btn-light btn-lg" asp-controller="Teacher" asp-action="Monitor" asp-route-id="@Model.Id"><i class="fas fa-chart-line me-2"></i>Monitor Attempts</a>
+                </div>
+            }
+        </div>
     </div>
 </div>
-<div class="card shadow-sm">
-    <div class="card-body">
-        <h2 class="h5 mb-3">Questions Preview</h2>
-        <ol>
+
+<div class="card" style="border:none; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm);">
+    <div class="card-body" style="padding:1.5rem;">
+        <h2 style="font-size:1.15rem; font-weight:700; margin-bottom:1.25rem;"><i class="fas fa-list-ol me-2 text-gradient"></i>Questions</h2>
+        <ol style="padding-left:1.25rem;">
             @foreach (var question in Model.Questions)
             {
-                <li class="mb-2">@question.Text</li>
+                <li style="padding:0.5rem 0; color:var(--gray-700); font-weight:500;">
+                    @question.Text
+                    <span class="badge text-bg-primary" style="margin-left:0.5rem;">@question.QuestionType</span>
+                    <span class="badge text-bg-secondary" style="margin-left:0.25rem;">@question.Marks marks</span>
+                </li>
             }
         </ol>
     </div>
+</div>
+<div class="mt-4">
+    <a class="btn btn-outline-primary" asp-controller="Quizzes" asp-action="Index"><i class="fas fa-arrow-left me-1"></i>Back</a>
 </div>

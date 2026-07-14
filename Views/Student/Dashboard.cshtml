@@ -2,11 +2,65 @@
 @{
     ViewData["Title"] = "Student Dashboard";
 }
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0">Student Dashboard</h1>
-    <a class="btn btn-primary" asp-action="AvailableQuizzes">View Quizzes</a>
+
+<div class="hero-section animate-fadeInUp" style="margin-bottom: 2.5rem;">
+    <div style="position:relative; z-index:1;">
+        <h1>Student Dashboard</h1>
+        <p class="lead mb-4">Track your progress and take quizzes.</p>
+        <div class="hero-actions d-flex gap-3">
+            <a class="btn btn-primary btn-lg" asp-action="JoinQuiz"><i class="fas fa-key me-2"></i>Join Quiz</a>
+            <a class="btn btn-outline-light btn-lg" asp-action="Attempts"><i class="fas fa-clock-rotate-left me-2"></i>My Attempts</a>
+        </div>
+    </div>
 </div>
-<div class="row g-3">
-    <div class="col-md-6"><div class="card stat-card"><div class="card-body"><div class="text-muted">Published Quizzes</div><div class="display-6">@Model.PublishedQuizzes</div></div></div></div>
-    <div class="col-md-6"><div class="card stat-card"><div class="card-body"><div class="text-muted">My Attempts</div><div class="display-6">@Model.Attempts</div></div></div></div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card purple animate-fadeInUp stagger-1">
+            <div class="card-body">
+                <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+                <div class="text-muted">Published Quizzes</div>
+                <div class="display-6">@Model.PublishedQuizzes</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card cyan animate-fadeInUp stagger-2">
+            <div class="card-body">
+                <div class="stat-icon"><i class="fas fa-check-double"></i></div>
+                <div class="text-muted">My Attempts</div>
+                <div class="display-6">@Model.Attempts</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card green animate-fadeInUp stagger-3">
+            <div class="card-body">
+                <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="text-muted">Average Score</div>
+                <div class="display-6">@Model.AverageScore.ToString("F1")%</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card stat-card pink animate-fadeInUp stagger-4">
+            <div class="card-body">
+                <div class="stat-icon"><i class="fas fa-trophy"></i></div>
+                <div class="text-muted">Highest Score</div>
+                <div class="display-6">@Model.HighestScore.ToString("F1")%</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card stat-card animate-fadeInUp stagger-5" style="border-top: 4px solid var(--warning);">
+            <div class="card-body">
+                <div class="stat-icon" style="background:rgba(245,158,11,0.1); color:var(--warning);"><i class="fas fa-hourglass-half"></i></div>
+                <div class="text-muted">Pending Reviews</div>
+                <div class="display-6">@Model.PendingReviews</div>
+            </div>
+        </div>
+    </div>
 </div>

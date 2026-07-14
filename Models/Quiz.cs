@@ -31,4 +31,6 @@ public class Quiz
     public ApplicationUser? Teacher { get; set; }
     public ICollection<Question> Questions { get; set; } = new List<Question>();
     public ICollection<StudentAttempt> StudentAttempts { get; set; } = new List<StudentAttempt>();
+    public QuizSettings? Settings { get; set; }
+    public ICollection<QuizAssignment> Assignments { get; set; } = new List<QuizAssignment>();
 }

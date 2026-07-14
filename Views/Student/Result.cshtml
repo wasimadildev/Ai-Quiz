@@ -1,24 +1,126 @@
 @model StudentAttempt
 @{
     ViewData["Title"] = "Quiz Result";
+    var result = Model.Result;
+    var isPass = result?.IsPass ?? false;
+    var hasSubjective = Model.ManualAnswers?.Any() == true;
+    var allGraded = hasSubjective && Model.ManualAnswers.All(ma => ma.IsGraded);
+    var anyPending = hasSubjective && Model.ManualAnswers.Any(ma => !ma.IsGraded);
 }
-<div class="card shadow-sm mb-4">
-    <div class="card-body text-center">
-        <h1 class="h3">@Model.Quiz?.Title Result</h1>
-        <div class="display-5 text-primary fw-semibold">@Model.Result?.Percentage%</div>
-        <p class="mb-0">Score: @Model.Result?.TotalScore / @Model.Result?.TotalQuestions</p>
-        <p class="text-muted">Correct: @Model.Result?.CorrectAnswers | Wrong: @Model.Result?.WrongAnswers</p>
+
+<div class="result-card animate-scaleIn" style="margin-bottom: 2rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+    <div class="result-header @(isPass ? "pass" : "fail")">
+        <div style="position:relative; z-index:1;">
+            <div style="font-size:0.9rem; opacity:0.85; margin-bottom:0.5rem;">@Model.Quiz?.Title</div>
+            <div class="result-percentage">@(result?.Percentage.ToString("F1"))%</div>
+            <div class="result-label">@(isPass ? "Great job! You passed!" : "Keep practicing!")</div>
+        </div>
     </div>
-</div>
-<div class="card shadow-sm">
-    <div class="card-body">
-        <h2 class="h5 mb-3">Answers</h2>
-        @foreach (var answer in Model.StudentAnswers)
+    <div class="result-details">
+        <div class="result-stats">
+            <div class="result-stat">
+                <div class="stat-value" style="color:var(--primary);">@(result?.AutoMarksObtained.ToString("F1"))</div>
+                <div class="stat-label">Auto Marks</div>
+                <div style="font-size:0.75rem; color:var(--gray-400);">/ @(result?.MaxAutoMarks)</div>
+            </div>
+            <div class="result-stat">
+                <div class="stat-value" style="color:var(--accent);">@(result?.SubjectiveMarksObtained.ToString("F1"))</div>
+                <div class="stat-label">Subjective Marks</div>
+                <div style="font-size:0.75rem; color:var(--gray-400);">/ @(result?.MaxSubjectiveMarks)</div>
+            </div>
+            <div class="result-stat">
+                <div class="stat-value" style="color:var(--success);">@(result?.TotalMarksObtained.ToString("F1"))</div>
+                <div class="stat-label">Total Marks</div>
+                <div style="font-size:0.75rem; color:var(--gray-400);">/ @(result?.TotalMaxMarks)</div>
+            </div>
+            <div class="result-stat">
+                <div class="stat-value" style="color:@(isPass ? "var(--success)" : "var(--danger)");">@(isPass ? "PASS" : "FAIL")</div>
+                <div class="stat-label">Status</div>
+                <div style="font-size:0.75rem; color:var(--gray-400);">Pass @result?.Percentage%+</div>
+            </div>
+        </div>
+
+        @if (Model.StartedAt != default && Model.SubmittedAt.HasValue)
         {
-            <div class="border-bottom py-2">
-                <div>@answer.Question?.Text</div>
-                <div class="small @(answer.IsCorrect ? "text-success" : "text-danger")">Selected: @(answer.SelectedOption?.Label ?? "None") - @(answer.IsCorrect ? "Correct" : "Wrong")</div>
+            var timeTaken = Model.SubmittedAt.Value - Model.StartedAt;
+            <div class="text-center mt-3" style="font-size:0.85rem; color:var(--gray-500);">
+                <i class="fas fa-clock me-1"></i>Time taken: @timeTaken.Minutes min @timeTaken.Seconds sec
             </div>
         }
     </div>
+</div>
+
+<!-- MCQ / TrueFalse Answers -->
+@if (Model.StudentAnswers != null && Model.StudentAnswers.Any())
+{
+    <div class="card" style="border:none; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); max-width:800px; margin:0 auto 2rem;">
+        <div class="card-body" style="padding:1.5rem;">
+            <h2 style="font-size:1.15rem; font-weight:700; margin-bottom:1.25rem;"><i class="fas fa-list-check me-2 text-gradient"></i>Objective Answers</h2>
+            @foreach (var answer in Model.StudentAnswers)
+            {
+                <div style="padding:1rem 0; border-bottom:1px solid var(--gray-100);">
+                    <div style="font-weight:600; margin-bottom:0.5rem;">@answer.Question?.Text</div>
+                    <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                        <span class="badge @(answer.IsCorrect ? "text-bg-success" : "text-bg-danger")" style="font-size:0.75rem;">
+                            <i class="fas @(answer.IsCorrect ? "fa-check" : "fa-times") me-1"></i>
+                            @(answer.IsCorrect ? "Correct" : "Wrong")
+                        </span>
+                        <span style="font-size:0.85rem; color:var(--gray-600);">
+                            Your answer: <strong>@(answer.SelectedOption?.Label ?? "None")</strong> - @(answer.SelectedOption?.Text ?? "No answer")
+                        </span>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<!-- Subjective Answers -->
+@if (hasSubjective)
+{
+    <div class="card" style="border:none; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); max-width:800px; margin:0 auto 2rem;">
+        <div class="card-body" style="padding:1.5rem;">
+            <h2 style="font-size:1.15rem; font-weight:700; margin-bottom:1.25rem;"><i class="fas fa-pen me-2 text-gradient"></i>Subjective Answers</h2>
+
+            @if (anyPending)
+            {
+                <div class="alert alert-warning mb-3">
+                    <i class="fas fa-hourglass-half"></i>
+                    Your subjective answers are pending teacher review.
+                </div>
+            }
+
+            @foreach (var ma in Model.ManualAnswers)
+            {
+                <div style="padding:1rem 0; border-bottom:1px solid var(--gray-100);">
+                    <div style="font-weight:600; margin-bottom:0.5rem;">@ma.Question?.Text</div>
+                    <div style="background:var(--gray-50); padding:0.75rem 1rem; border-radius:var(--radius-md); margin-bottom:0.5rem; font-size:0.9rem; color:var(--gray-700); white-space:pre-wrap;">@ma.AnswerText</div>
+                    <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                        @if (ma.IsGraded)
+                        {
+                            <span class="badge text-bg-success">
+                                <i class="fas fa-check me-1"></i>Graded: @ma.AwardedMarks / @ma.Question?.Marks
+                            </span>
+                            @if (!string.IsNullOrEmpty(ma.TeacherFeedback))
+                            {
+                                <span style="font-size:0.85rem; color:var(--gray-500);">
+                                    <i class="fas fa-comment me-1"></i>@ma.TeacherFeedback
+                                </span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="badge text-bg-warning">
+                                <i class="fas fa-hourglass-half me-1"></i>Pending Review
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<div class="text-center mt-4 mb-4" style="max-width:800px; margin-left:auto; margin-right:auto;">
+    <a class="btn btn-outline-primary" asp-action="Attempts"><i class="fas fa-arrow-left me-1"></i>Back to Attempts</a>
 </div>

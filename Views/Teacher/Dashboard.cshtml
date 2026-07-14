@@ -2,15 +2,146 @@
 @{
     ViewData["Title"] = "Teacher Dashboard";
 }
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0">Teacher Dashboard</h1>
-    <div>
-        <a class="btn btn-outline-primary" asp-action="Create">Create Quiz</a>
-        <a class="btn btn-primary" asp-action="Generate">Generate with AI</a>
+
+<div class="hero-section animate-fadeInUp">
+    <div class="row align-items-center">
+        <div class="col-lg-7">
+            <h1><i class="fas fa-chalkboard-teacher me-2"></i>Teacher Dashboard</h1>
+            <p class="lead">Welcome back! Here's an overview of your quizzes and student activity.</p>
+            <div class="hero-actions d-flex gap-2 mt-4">
+                <a class="btn btn-primary btn-lg" asp-action="Create"><i class="fas fa-plus me-2"></i>Create Quiz</a>
+                <a class="btn btn-accent btn-lg" asp-action="Generate"><i class="fas fa-wand-magic-sparkles me-2"></i>Generate with AI</a>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="hero-features">
+                <h2>Quick Actions</h2>
+                <ul class="list-unstyled mb-0">
+                    <li><a asp-action="ReviewDashboard" class="text-white text-decoration-none">Review Dashboard</a></li>
+                    <li><a asp-action="Quizzes" class="text-white text-decoration-none">My Quizzes</a></li>
+                    <li><a asp-action="Students" class="text-white text-decoration-none">Students</a></li>
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
-<div class="row g-3">
-    <div class="col-md-4"><div class="card stat-card"><div class="card-body"><div class="text-muted">Total Quizzes</div><div class="display-6">@Model.TotalQuizzes</div></div></div></div>
-    <div class="col-md-4"><div class="card stat-card"><div class="card-body"><div class="text-muted">Published</div><div class="display-6">@Model.PublishedQuizzes</div></div></div></div>
-    <div class="col-md-4"><div class="card stat-card"><div class="card-body"><div class="text-muted">Student Attempts</div><div class="display-6">@Model.Attempts</div></div></div></div>
+
+<h4 class="mb-3 fw-bold" style="color:var(--gray-700);"><i class="fas fa-chart-line me-2 text-gradient"></i>Overview</h4>
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card stat-card purple animate-fadeInUp stagger-1">
+            <div class="card-body">
+                <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+                <div class="text-muted">Total Quizzes</div>
+                <div class="display-6">@Model.TotalQuizzes</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card stat-card green animate-fadeInUp stagger-2">
+            <div class="card-body">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="text-muted">Published</div>
+                <div class="display-6">@Model.PublishedQuizzes</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card stat-card pink animate-fadeInUp stagger-3">
+            <div class="card-body">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="text-muted">Student Attempts</div>
+                <div class="display-6">@Model.Attempts</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card stat-card cyan animate-fadeInUp stagger-4">
+            <div class="card-body">
+                <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+                <div class="text-muted">Total Students</div>
+                <div class="display-6">@Model.TotalStudents</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="mb-3 fw-bold" style="color:var(--gray-700);"><i class="fas fa-chart-bar me-2 text-gradient"></i>Analytics</h4>
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card stat-card green animate-fadeInUp stagger-1">
+            <div class="card-body">
+                <div class="stat-icon"><i class="fas fa-chart-simple"></i></div>
+                <div class="text-muted">Average Score</div>
+                <div class="display-6">@Model.AverageScore.ToString("0.0")%</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card stat-card purple animate-fadeInUp stagger-2">
+            <div class="card-body">
+                <div class="stat-icon"><i class="fas fa-arrow-up"></i></div>
+                <div class="text-muted">Highest Score</div>
+                <div class="display-6">@Model.HighestScore.ToString("0.0")%</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card stat-card pink animate-fadeInUp stagger-3">
+            <div class="card-body">
+                <div class="stat-icon"><i class="fas fa-arrow-down"></i></div>
+                <div class="text-muted">Lowest Score</div>
+                <div class="display-6">@Model.LowestScore.ToString("0.0")%</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card stat-card cyan animate-fadeInUp stagger-4">
+            <div class="card-body">
+                <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                <div class="text-muted">Avg Completion</div>
+                <div class="display-6">@Model.AverageCompletionTime.ToString("0.0")<small style="font-size:0.5em;"> min</small></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="mb-3 fw-bold" style="color:var(--gray-700);"><i class="fas fa-shield-halved me-2 text-gradient"></i>Security & Reviews</h4>
+<div class="row g-4">
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card stat-card pink animate-fadeInUp stagger-1">
+            <div class="card-body">
+                <div class="stat-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                <div class="text-muted">Total Violations</div>
+                <div class="display-6">@Model.TotalViolations</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card stat-card purple animate-fadeInUp stagger-2">
+            <div class="card-body">
+                <div class="stat-icon"><i class="fas fa-user-slash"></i></div>
+                <div class="text-muted">Failed (Cheating)</div>
+                <div class="display-6">@Model.FailedDueToCheating</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card stat-card cyan animate-fadeInUp stagger-3">
+            <div class="card-body">
+                <div class="stat-icon"><i class="fas fa-clipboard-check"></i></div>
+                <div class="text-muted">Pending Reviews</div>
+                <div class="display-6">@Model.PendingReviews</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+        <div class="card stat-card green animate-fadeInUp stagger-4">
+            <div class="card-body">
+                <div class="stat-icon"><i class="fas fa-star"></i></div>
+                <div class="text-muted">Avg Score</div>
+                <div class="display-6">@Model.AverageScore.ToString("0.0")%</div>
+            </div>
+        </div>
+    </div>
 </div>

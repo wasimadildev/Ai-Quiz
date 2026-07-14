@@ -1,0 +1,63 @@
+@model ReviewDashboardViewModel
+@{
+    ViewData["Title"] = "Review Dashboard";
+}
+
+<div class="dashboard-header">
+    <h1><i class="fas fa-clipboard-check me-2 text-gradient"></i>Review Dashboard</h1>
+    <a class="btn btn-outline-secondary" asp-action="Dashboard"><i class="fas fa-arrow-left me-1"></i>Back to Dashboard</a>
+</div>
+
+@if (!Model.Entries.Any())
+{
+    <div class="empty-state">
+        <div class="empty-icon"><i class="fas fa-check-double"></i></div>
+        <h3>All caught up!</h3>
+        <p>No subjective answers pending for review.</p>
+    </div>
+}
+else
+{
+    <div class="card" style="border:none; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm);">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-user me-1"></i>Student</th>
+                        <th><i class="fas fa-clipboard-list me-1"></i>Quiz</th>
+                        <th><i class="fas fa-clock me-1"></i>Pending / Total</th>
+                        <th><i class="fas fa-toggle-on me-1"></i>Status</th>
+                        <th class="text-end"><i class="fas fa-cogs me-1"></i>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var entry in Model.Entries)
+                {
+                    <tr>
+                        <td style="font-weight:600;">@entry.StudentName</td>
+                        <td style="color:var(--gray-500);">@entry.QuizTitle</td>
+                        <td>
+                            <span class="badge @(entry.PendingCount > 0 ? "text-bg-warning" : "text-bg-success")">
+                                @entry.PendingCount / @entry.TotalSubjective
+                            </span>
+                        </td>
+                        <td>
+                            @if (entry.Status == "Pending")
+                            {
+                                <span class="badge text-bg-warning"><i class="fas fa-clock me-1"></i>Pending</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-success"><i class="fas fa-check me-1"></i>Completed</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary" asp-action="Review" asp-route-attemptId="@entry.AttemptId"><i class="fas fa-pen me-1"></i>Review</a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

@@ -3,43 +3,66 @@
     ViewData["Title"] = "Register";
 }
 <div class="row justify-content-center">
-    <div class="col-md-7 col-lg-6">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h1 class="h3 mb-3">Create Account</h1>
+    <div class="col-md-6 col-lg-5">
+        <div class="card auth-card">
+            <div class="card-body">
+                <div class="auth-header">
+                    <div class="auth-icon"><i class="fas fa-user-plus"></i></div>
+                    <h1>Create Account</h1>
+                    <p>Join the AI Quiz platform</p>
+                </div>
                 <form asp-action="Register" method="post">
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                     <div class="mb-3">
                         <label asp-for="FullName" class="form-label"></label>
-                        <input asp-for="FullName" class="form-control" />
+                        <div style="position:relative;">
+                            <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--gray-400);"><i class="fas fa-user"></i></span>
+                            <input asp-for="FullName" class="form-control" style="padding-left:2.5rem;" placeholder="John Doe" />
+                        </div>
                         <span asp-validation-for="FullName" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
                         <label asp-for="Email" class="form-label"></label>
-                        <input asp-for="Email" class="form-control" />
+                        <div style="position:relative;">
+                            <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--gray-400);"><i class="fas fa-envelope"></i></span>
+                            <input asp-for="Email" class="form-control" style="padding-left:2.5rem;" placeholder="you@example.com" />
+                        </div>
                         <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
                         <label asp-for="Role" class="form-label"></label>
-                        <select asp-for="Role" class="form-select">
-                            <option value="Student">Student</option>
-                            <option value="Teacher">Teacher</option>
-                        </select>
+                        <div style="position:relative;">
+                            <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--gray-400);"><i class="fas fa-id-badge"></i></span>
+                            <select asp-for="Role" class="form-select" style="padding-left:2.5rem;">
+                                <option value="Student"><i class="fas fa-graduation-cap"></i> Student</option>
+                                <option value="Teacher"><i class="fas fa-chalkboard-teacher"></i> Teacher</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label asp-for="Password" class="form-label"></label>
-                            <input asp-for="Password" class="form-control" />
+                            <div style="position:relative;">
+                                <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--gray-400);"><i class="fas fa-lock"></i></span>
+                                <input asp-for="Password" class="form-control" style="padding-left:2.5rem;" placeholder="Min 6 characters" />
+                            </div>
                             <span asp-validation-for="Password" class="text-danger"></span>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label asp-for="ConfirmPassword" class="form-label"></label>
-                            <input asp-for="ConfirmPassword" class="form-control" />
+                            <div style="position:relative;">
+                                <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--gray-400);"><i class="fas fa-lock"></i></span>
+                                <input asp-for="ConfirmPassword" class="form-control" style="padding-left:2.5rem;" placeholder="Confirm password" />
+                            </div>
                             <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Register</button>
+                    <button type="submit" class="btn btn-primary w-100 btn-lg"><i class="fas fa-user-plus me-2"></i>Create Account</button>
                 </form>
+                <div class="text-center mt-4">
+                    <span style="color:var(--gray-500); font-size:0.9rem;">Already have an account?</span>
+                    <a asp-action="Login" style="font-weight:600; font-size:0.9rem;">Sign in</a>
+                </div>
             </div>
         </div>
     </div>

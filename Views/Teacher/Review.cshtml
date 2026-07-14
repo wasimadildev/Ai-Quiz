@@ -1,0 +1,65 @@
+@model List<GradeViewModel>
+@{
+    ViewData["Title"] = "Review Answers";
+}
+
+<div class="dashboard-header">
+    <h1><i class="fas fa-pen-fancy me-2 text-gradient"></i>Review Answers</h1>
+    <a class="btn btn-outline-secondary" asp-action="ReviewDashboard"><i class="fas fa-arrow-left me-1"></i>Back to Reviews</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <div class="empty-icon"><i class="fas fa-check-double"></i></div>
+        <h3>Nothing to review</h3>
+        <p>All answers have been graded.</p>
+    </div>
+}
+else
+{
+    @for (var i = 0; i < Model.Count; i++)
+    {
+        <div class="card mb-4 animate-fadeInUp" style="border:none; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); animation-delay: @(i * 0.05)s; animation-fill-mode: both;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="question-number" style="margin-right:0.75rem;">@(i + 1)</span>
+                    <span class="fw-bold">Question @(i + 1)</span>
+                </div>
+                <span class="badge text-bg-primary">Max: @Model[i].MaxMarks marks</span>
+            </div>
+            <div class="card-body">
+                <form asp-action="Grade" method="post">
+                    <input type="hidden" name="ManualAnswerId" value="@Model[i].ManualAnswerId" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold" style="color:var(--gray-700);"><i class="fas fa-question-circle me-1"></i>Question</label>
+                        <div class="p-3" style="background:var(--gray-50); border-radius:var(--radius-md); border:1px solid var(--gray-200);">
+                            @Model[i].QuestionText
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold" style="color:var(--gray-700);"><i class="fas fa-align-left me-1"></i>Student Answer</label>
+                        <textarea class="form-control" rows="4" readonly style="background:var(--gray-50);">@Model[i].StudentAnswer</textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold" style="color:var(--gray-700);"><i class="fas fa-star me-1"></i>Awarded Marks (out of @Model[i].MaxMarks)</label>
+                            <input name="AwardedMarks" class="form-control" type="number" step="0.5" min="0" max="@Model[i].MaxMarks" value="@Model[i].AwardedMarks" required />
+                        </div>
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label fw-bold" style="color:var(--gray-700);"><i class="fas fa-comment me-1"></i>Feedback</label>
+                            <input name="TeacherFeedback" class="form-control" placeholder="Optional feedback for the student" value="@Model[i].TeacherFeedback" />
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-success"><i class="fas fa-save me-1"></i>Save Grade</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+}

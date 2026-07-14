@@ -1,30 +1,461 @@
 @model QuizFormViewModel
+
 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-<div class="row">
-    <div class="col-md-6 mb-3"><label asp-for="Title" class="form-label"></label><input asp-for="Title" class="form-control" /><span asp-validation-for="Title" class="text-danger"></span></div>
-    <div class="col-md-6 mb-3"><label asp-for="Subject" class="form-label"></label><input asp-for="Subject" class="form-control" /><span asp-validation-for="Subject" class="text-danger"></span></div>
-</div>
-<div class="row">
-    <div class="col-md-6 mb-3"><label asp-for="Topic" class="form-label"></label><input asp-for="Topic" class="form-control" /><span asp-validation-for="Topic" class="text-danger"></span></div>
-    <div class="col-md-3 mb-3"><label asp-for="Difficulty" class="form-label"></label><select asp-for="Difficulty" class="form-select"><option>Easy</option><option>Medium</option><option>Hard</option></select></div>
-    <div class="col-md-3 mb-3 d-flex align-items-end"><div class="form-check"><input asp-for="IsPublished" class="form-check-input" /><label asp-for="IsPublished" class="form-check-label">Published</label></div></div>
-</div>
-<hr />
-<h2 class="h5 mb-3">Questions</h2>
-@for (var i = 0; i < Model.Questions.Count; i++)
-{
-    <div class="border rounded p-3 mb-3">
-        <input asp-for="Questions[i].Id" type="hidden" />
-        <div class="mb-3"><label asp-for="Questions[i].Text" class="form-label"></label><textarea asp-for="Questions[i].Text" class="form-control" rows="2"></textarea><span asp-validation-for="Questions[i].Text" class="text-danger"></span></div>
+
+<ul class="nav nav-tabs mb-4" id="quizTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#tabDetails" type="button" role="tab">
+            <i class="fas fa-info-circle me-1"></i>Quiz Details
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="questions-tab" data-bs-toggle="tab" data-bs-target="#tabQuestions" type="button" role="tab">
+            <i class="fas fa-circle-question me-1"></i>Questions
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#tabSettings" type="button" role="tab">
+            <i class="fas fa-cog me-1"></i>Settings
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="students-tab" data-bs-toggle="tab" data-bs-target="#tabStudents" type="button" role="tab">
+            <i class="fas fa-users me-1"></i>Assign Students
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="quizTabContent">
+
+    <!-- Tab 1: Quiz Details -->
+    <div class="tab-pane fade show active" id="tabDetails" role="tabpanel">
         <div class="row">
-            <div class="col-md-6 mb-3"><label asp-for="Questions[i].OptionA" class="form-label"></label><input asp-for="Questions[i].OptionA" class="form-control" /><span asp-validation-for="Questions[i].OptionA" class="text-danger"></span></div>
-            <div class="col-md-6 mb-3"><label asp-for="Questions[i].OptionB" class="form-label"></label><input asp-for="Questions[i].OptionB" class="form-control" /><span asp-validation-for="Questions[i].OptionB" class="text-danger"></span></div>
-            <div class="col-md-6 mb-3"><label asp-for="Questions[i].OptionC" class="form-label"></label><input asp-for="Questions[i].OptionC" class="form-control" /><span asp-validation-for="Questions[i].OptionC" class="text-danger"></span></div>
-            <div class="col-md-6 mb-3"><label asp-for="Questions[i].OptionD" class="form-label"></label><input asp-for="Questions[i].OptionD" class="form-control" /><span asp-validation-for="Questions[i].OptionD" class="text-danger"></span></div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="Title" class="form-label"></label>
+                <input asp-for="Title" class="form-control" placeholder="Quiz title" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="Subject" class="form-label"></label>
+                <input asp-for="Subject" class="form-control" placeholder="Subject" />
+                <span asp-validation-for="Subject" class="text-danger"></span>
+            </div>
         </div>
         <div class="row">
-            <div class="col-md-4 mb-3"><label asp-for="Questions[i].CorrectAnswer" class="form-label"></label><select asp-for="Questions[i].CorrectAnswer" class="form-select"><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
-            <div class="col-md-8 mb-3"><label asp-for="Questions[i].Explanation" class="form-label"></label><input asp-for="Questions[i].Explanation" class="form-control" /></div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="Topic" class="form-label"></label>
+                <input asp-for="Topic" class="form-control" placeholder="Topic" />
+                <span asp-validation-for="Topic" class="text-danger"></span>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="Difficulty" class="form-label"></label>
+                <select asp-for="Difficulty" class="form-select">
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3 d-flex align-items-end">
+                <div class="form-check" style="padding:0.5rem 1rem; border:2px solid var(--gray-200); border-radius:var(--radius-md); width:100%;">
+                    <input asp-for="IsPublished" class="form-check-input" />
+                    <label asp-for="IsPublished" class="form-check-label" style="font-weight:600; margin-left:0.25rem;">Publish immediately</label>
+                </div>
+            </div>
         </div>
     </div>
-}
+
+    <!-- Tab 2: Questions -->
+    <div class="tab-pane fade" id="tabQuestions" role="tabpanel">
+        <div id="questionsContainer">
+            @for (var i = 0; i < Model.Questions.Count; i++)
+            {
+                <div class="question-form-block animate-fadeInUp" data-index="@i">
+                    <span class="question-number-badge">Q@(i + 1)</span>
+                    <input asp-for="Questions[i].Id" type="hidden" />
+                    <div class="d-flex justify-content-between align-items-start mb-3" style="margin-top:0.5rem;">
+                        <div class="flex-grow-1 me-2">
+                            <label asp-for="Questions[i].Text" class="form-label"></label>
+                            <textarea asp-for="Questions[i].Text" class="form-control" rows="2" placeholder="Enter your question"></textarea>
+                            <span asp-validation-for="Questions[i].Text" class="text-danger"></span>
+                        </div>
+                        <div class="d-flex gap-1 mt-4">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="duplicateQuestion(@i)" title="Duplicate"><i class="fas fa-copy"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeQuestion(this)" title="Remove"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Questions[i].QuestionType" class="form-label"><i class="fas fa-list me-1"></i>Question Type</label>
+                            <select asp-for="Questions[i].QuestionType" class="form-select question-type-select" onchange="toggleOptions(this)">
+                                <option value="MCQ">Multiple Choice (MCQ)</option>
+                                <option value="TrueFalse">True / False</option>
+                                <option value="ShortAnswer">Short Answer</option>
+                                <option value="LongAnswer">Long Answer</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="Questions[i].Marks" class="form-label"><i class="fas fa-star me-1"></i>Marks</label>
+                            <input asp-for="Questions[i].Marks" class="form-control" type="number" min="1" />
+                        </div>
+                        <div class="col-md-5 mb-3 d-flex align-items-end">
+                            <div class="form-check" style="padding:0.5rem 1rem; border:2px solid var(--gray-200); border-radius:var(--radius-md); width:100%;">
+                                <input asp-for="Questions[i].IsRequired" class="form-check-input" />
+                                <label asp-for="Questions[i].IsRequired" class="form-check-label" style="font-weight:600; margin-left:0.25rem;">Required</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="options-section">
+                        <div class="row mcq-options">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Questions[i].OptionA" class="form-label"><span style="color:var(--primary); font-weight:700;">A.</span> Option A</label>
+                                <input asp-for="Questions[i].OptionA" class="form-control option-input" placeholder="Option A" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Questions[i].OptionB" class="form-label"><span style="color:var(--primary); font-weight:700;">B.</span> Option B</label>
+                                <input asp-for="Questions[i].OptionB" class="form-control option-input" placeholder="Option B" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Questions[i].OptionC" class="form-label"><span style="color:var(--primary); font-weight:700;">C.</span> Option C</label>
+                                <input asp-for="Questions[i].OptionC" class="form-control option-input" placeholder="Option C" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Questions[i].OptionD" class="form-label"><span style="color:var(--primary); font-weight:700;">D.</span> Option D</label>
+                                <input asp-for="Questions[i].OptionD" class="form-control option-input" placeholder="Option D" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Questions[i].CorrectAnswer" class="form-label"><i class="fas fa-check-circle me-1" style="color:var(--success);"></i>Correct Answer</label>
+                            <select asp-for="Questions[i].CorrectAnswer" class="form-select correct-answer-select">
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8 mb-3">
+                            <label asp-for="Questions[i].Explanation" class="form-label"><i class="fas fa-lightbulb me-1" style="color:var(--warning);"></i>Explanation (optional)</label>
+                            <input asp-for="Questions[i].Explanation" class="form-control" placeholder="Why this is the correct answer" />
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <button type="button" class="btn btn-outline-primary" onclick="addQuestion()"><i class="fas fa-plus me-1"></i>Add Question</button>
+    </div>
+
+    <!-- Tab 3: Settings -->
+    <div class="tab-pane fade" id="tabSettings" role="tabpanel">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label asp-for="Settings.TimeLimitMinutes" class="form-label"><i class="fas fa-clock me-1"></i>Time Limit (minutes)</label>
+                <input asp-for="Settings.TimeLimitMinutes" class="form-control" type="number" min="1" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="Settings.PassingPercentage" class="form-label"><i class="fas fa-percent me-1"></i>Passing Percentage</label>
+                <input asp-for="Settings.PassingPercentage" class="form-control" type="number" min="0" max="100" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="Settings.NegativeMarkFactor" class="form-label"><i class="fas fa-minus-circle me-1"></i>Negative Mark Factor</label>
+                <input asp-for="Settings.NegativeMarkFactor" class="form-control" type="number" step="0.05" min="0" />
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="form-check" style="padding:0.6rem 1rem; border:2px solid var(--gray-200); border-radius:var(--radius-md);">
+                    <input asp-for="Settings.RandomizeQuestions" class="form-check-input" />
+                    <label asp-for="Settings.RandomizeQuestions" class="form-check-label" style="font-weight:600; margin-left:0.25rem;">Randomize Questions</label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-check" style="padding:0.6rem 1rem; border:2px solid var(--gray-200); border-radius:var(--radius-md);">
+                    <input asp-for="Settings.OneAttemptOnly" class="form-check-input" />
+                    <label asp-for="Settings.OneAttemptOnly" class="form-check-label" style="font-weight:600; margin-left:0.25rem;">One Attempt Only</label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-check" style="padding:0.6rem 1rem; border:2px solid var(--gray-200); border-radius:var(--radius-md);">
+                    <input asp-for="Settings.NegativeMarking" class="form-check-input" />
+                    <label asp-for="Settings.NegativeMarking" class="form-check-label" style="font-weight:600; margin-left:0.25rem;">Negative Marking</label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-check" style="padding:0.6rem 1rem; border:2px solid var(--gray-200); border-radius:var(--radius-md);">
+                    <input asp-for="Settings.ShowResultImmediately" class="form-check-input" />
+                    <label asp-for="Settings.ShowResultImmediately" class="form-check-label" style="font-weight:600; margin-left:0.25rem;">Show Result Immediately</label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-check" style="padding:0.6rem 1rem; border:2px solid var(--gray-200); border-radius:var(--radius-md);">
+                    <input asp-for="Settings.RequireFullscreen" class="form-check-input" />
+                    <label asp-for="Settings.RequireFullscreen" class="form-check-label" style="font-weight:600; margin-left:0.25rem;">Require Fullscreen</label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-check" style="padding:0.6rem 1rem; border:2px solid var(--gray-200); border-radius:var(--radius-md);">
+                    <input asp-for="Settings.EnableAntiCheating" class="form-check-input" />
+                    <label asp-for="Settings.EnableAntiCheating" class="form-check-label" style="font-weight:600; margin-left:0.25rem;">Anti-Cheating</label>
+                </div>
+            </div>
+        </div>
+
+        <h6 class="fw-bold mb-3" style="color:var(--gray-700);"><i class="fas fa-link me-1 text-gradient"></i>Access</h6>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label asp-for="Settings.JoinCode" class="form-label">Join Code</label>
+                <input asp-for="Settings.JoinCode" class="form-control" readonly style="background:var(--gray-50);" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="Settings.QuizPassword" class="form-label">Password (optional)</label>
+                <input asp-for="Settings.QuizPassword" class="form-control" type="password" placeholder="Leave blank for no password" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="Settings.AvailableFrom" class="form-label"><i class="fas fa-calendar me-1"></i>Available From</label>
+                <input asp-for="Settings.AvailableFrom" class="form-control" type="datetime-local" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="Settings.AvailableUntil" class="form-label"><i class="fas fa-calendar-check me-1"></i>Available Until</label>
+                <input asp-for="Settings.AvailableUntil" class="form-control" type="datetime-local" />
+            </div>
+        </div>
+
+        <h6 class="fw-bold mb-3 mt-2" style="color:var(--gray-700);"><i class="fas fa-shield-halved me-1 text-gradient"></i>Violation Limits</h6>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label asp-for="Settings.MaxTabSwitches" class="form-label">Max Tab Switches</label>
+                <input asp-for="Settings.MaxTabSwitches" class="form-control" type="number" min="0" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="Settings.MaxWindowChanges" class="form-label">Max Window Changes</label>
+                <input asp-for="Settings.MaxWindowChanges" class="form-control" type="number" min="0" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="Settings.MaxCopyAttempts" class="form-label">Max Copy Attempts</label>
+                <input asp-for="Settings.MaxCopyAttempts" class="form-control" type="number" min="0" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="Settings.MaxPasteAttempts" class="form-label">Max Paste Attempts</label>
+                <input asp-for="Settings.MaxPasteAttempts" class="form-control" type="number" min="0" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="Settings.MaxRightClicks" class="form-label">Max Right Clicks</label>
+                <input asp-for="Settings.MaxRightClicks" class="form-control" type="number" min="0" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="Settings.MaxFullscreenExits" class="form-label">Max Fullscreen Exits</label>
+                <input asp-for="Settings.MaxFullscreenExits" class="form-control" type="number" min="0" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 4: Assign Students -->
+    <div class="tab-pane fade" id="tabStudents" role="tabpanel">
+        <div class="mb-3">
+            <input type="text" id="studentSearch" class="form-control" placeholder="Search students by name or email..." oninput="filterStudents()" />
+        </div>
+        <div id="studentsList" style="max-height:400px; overflow-y:auto;">
+            @if (Model.AssignedStudentIds != null && Model.AssignedStudentIds.Any())
+            {
+                @for (var s = 0; s < Model.AssignedStudentIds.Count; s++)
+                {
+                    <input asp-for="AssignedStudentIds[s]" type="hidden" />
+                }
+            }
+            <p class="text-muted" id="noStudentsMsg" style="display:none;">No students found.</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    var questionIndex = @Model.Questions.Count;
+
+    function addQuestion() {
+        var container = document.getElementById('questionsContainer');
+        var idx = questionIndex++;
+        var html = `
+            <div class="question-form-block animate-fadeInUp" data-index="${idx}">
+                <span class="question-number-badge">Q${idx + 1}</span>
+                <input name="Questions[${idx}].Id" type="hidden" value="0" />
+                <div class="d-flex justify-content-between align-items-start mb-3" style="margin-top:0.5rem;">
+                    <div class="flex-grow-1 me-2">
+                        <label class="form-label">Question</label>
+                        <textarea name="Questions[${idx}].Text" class="form-control" rows="2" placeholder="Enter your question"></textarea>
+                    </div>
+                    <div class="d-flex gap-1 mt-4">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="duplicateQuestion(${idx})" title="Duplicate"><i class="fas fa-copy"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeQuestion(this)" title="Remove"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><i class="fas fa-list me-1"></i>Question Type</label>
+                        <select name="Questions[${idx}].QuestionType" class="form-select question-type-select" onchange="toggleOptions(this)">
+                            <option value="MCQ">Multiple Choice (MCQ)</option>
+                            <option value="TrueFalse">True / False</option>
+                            <option value="ShortAnswer">Short Answer</option>
+                            <option value="LongAnswer">Long Answer</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label"><i class="fas fa-star me-1"></i>Marks</label>
+                        <input name="Questions[${idx}].Marks" class="form-control" type="number" min="1" value="1" />
+                    </div>
+                    <div class="col-md-5 mb-3 d-flex align-items-end">
+                        <div class="form-check" style="padding:0.5rem 1rem; border:2px solid var(--gray-200); border-radius:var(--radius-md); width:100%;">
+                            <input name="Questions[${idx}].IsRequired" type="checkbox" class="form-check-input" value="true" checked />
+                            <label class="form-check-label" style="font-weight:600; margin-left:0.25rem;">Required</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="options-section">
+                    <div class="row mcq-options">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><span style="color:var(--primary); font-weight:700;">A.</span> Option A</label>
+                            <input name="Questions[${idx}].OptionA" class="form-control option-input" placeholder="Option A" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><span style="color:var(--primary); font-weight:700;">B.</span> Option B</label>
+                            <input name="Questions[${idx}].OptionB" class="form-control option-input" placeholder="Option B" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><span style="color:var(--primary); font-weight:700;">C.</span> Option C</label>
+                            <input name="Questions[${idx}].OptionC" class="form-control option-input" placeholder="Option C" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><span style="color:var(--primary); font-weight:700;">D.</span> Option D</label>
+                            <input name="Questions[${idx}].OptionD" class="form-control option-input" placeholder="Option D" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><i class="fas fa-check-circle me-1" style="color:var(--success);"></i>Correct Answer</label>
+                        <select name="Questions[${idx}].CorrectAnswer" class="form-select correct-answer-select">
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label"><i class="fas fa-lightbulb me-1" style="color:var(--warning);"></i>Explanation (optional)</label>
+                        <input name="Questions[${idx}].Explanation" class="form-control" placeholder="Why this is the correct answer" />
+                    </div>
+                </div>
+            </div>`;
+        container.insertAdjacentHTML('beforeend', html);
+        renumberQuestions();
+    }
+
+    function removeQuestion(btn) {
+        var block = btn.closest('.question-form-block');
+        block.remove();
+        renumberQuestions();
+    }
+
+    function duplicateQuestion(index) {
+        var blocks = document.querySelectorAll('.question-form-block');
+        if (index < blocks.length) {
+            var clone = blocks[index].cloneNode(true);
+            var newIdx = questionIndex++;
+            var inputs = clone.querySelectorAll('input, select, textarea');
+            inputs.forEach(function (el) {
+                if (el.name) {
+                    el.name = el.name.replace(/Questions\[\d+\]/, 'Questions[' + newIdx + ']');
+                }
+            });
+            clone.setAttribute('data-index', newIdx);
+            document.getElementById('questionsContainer').appendChild(clone);
+            renumberQuestions();
+        }
+    }
+
+    function renumberQuestions() {
+        var blocks = document.querySelectorAll('.question-form-block');
+        blocks.forEach(function (block, i) {
+            block.querySelector('.question-number-badge').textContent = 'Q' + (i + 1);
+        });
+    }
+
+    function toggleOptions(select) {
+        var block = select.closest('.question-form-block');
+        var optionsSection = block.querySelector('.options-section');
+        var correctSelect = block.querySelector('.correct-answer-select');
+        var type = select.value;
+
+        if (type === 'MCQ') {
+            optionsSection.style.display = '';
+            optionsSection.querySelector('.mcq-options').innerHTML = `
+                <div class="col-md-6 mb-3">
+                    <label class="form-label"><span style="color:var(--primary); font-weight:700;">A.</span> Option A</label>
+                    <input name="${getBlockName(block)}OptionA" class="form-control option-input" placeholder="Option A" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label"><span style="color:var(--primary); font-weight:700;">B.</span> Option B</label>
+                    <input name="${getBlockName(block)}OptionB" class="form-control option-input" placeholder="Option B" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label"><span style="color:var(--primary); font-weight:700;">C.</span> Option C</label>
+                    <input name="${getBlockName(block)}OptionC" class="form-control option-input" placeholder="Option C" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label"><span style="color:var(--primary); font-weight:700;">D.</span> Option D</label>
+                    <input name="${getBlockName(block)}OptionD" class="form-control option-input" placeholder="Option D" />
+                </div>`;
+            correctSelect.innerHTML = '<option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>';
+        } else if (type === 'TrueFalse') {
+            optionsSection.style.display = '';
+            optionsSection.querySelector('.mcq-options').innerHTML = `
+                <div class="col-md-6 mb-3">
+                    <label class="form-label"><span style="color:var(--primary); font-weight:700;">A.</span> True</label>
+                    <input name="${getBlockName(block)}OptionA" class="form-control option-input" value="True" readonly />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label"><span style="color:var(--primary); font-weight:700;">B.</span> False</label>
+                    <input name="${getBlockName(block)}OptionB" class="form-control option-input" value="False" readonly />
+                </div>`;
+            correctSelect.innerHTML = '<option value="A">True</option><option value="B">False</option>';
+        } else {
+            optionsSection.style.display = 'none';
+            correctSelect.innerHTML = '<option value="">N/A</option>';
+        }
+    }
+
+    function getBlockName(block) {
+        var firstInput = block.querySelector('input[type="hidden"]');
+        if (firstInput && firstInput.name) {
+            var match = firstInput.name.match(/Questions\[(\d+)\]/);
+            if (match) return 'Questions[' + match[1] + '].';
+        }
+        return '';
+    }
+
+    function filterStudents() {
+        var query = document.getElementById('studentSearch').value.toLowerCase();
+        var items = document.querySelectorAll('#studentsList .student-item');
+        var noMsg = document.getElementById('noStudentsMsg');
+        var found = false;
+        items.forEach(function (item) {
+            var text = item.textContent.toLowerCase();
+            if (text.includes(query)) {
+                item.style.display = '';
+                found = true;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        noMsg.style.display = found ? 'none' : 'block';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.question-type-select').forEach(function (sel) {
+            toggleOptions(sel);
+        });
+    });
+</script>

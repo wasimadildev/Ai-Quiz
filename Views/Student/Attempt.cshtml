@@ -1,30 +1,381 @@
 @model AttemptQuizViewModel
 @{
     ViewData["Title"] = "Attempt Quiz";
+    ViewData["HideLayout"] = true;
+    var timeLimit = Model.Settings?.TimeLimitMinutes ?? 30;
+    var requireFullscreen = Model.Settings?.RequireFullscreen ?? false;
+    var enableAntiCheating = Model.Settings?.EnableAntiCheating ?? false;
+    var maxTabSwitches = Model.Settings?.MaxTabSwitches ?? 3;
+    var maxWindowChanges = Model.Settings?.MaxWindowChanges ?? 3;
+    var maxCopyAttempts = Model.Settings?.MaxCopyAttempts ?? 2;
+    var maxPasteAttempts = Model.Settings?.MaxPasteAttempts ?? 2;
+    var maxRightClicks = Model.Settings?.MaxRightClicks ?? 2;
+    var maxFullscreenExits = Model.Settings?.MaxFullscreenExits ?? 3;
 }
-<h1 class="h3 mb-4">@Model.QuizTitle</h1>
-<form asp-action="Attempt" method="post">
-    <input asp-for="QuizId" type="hidden" />
-    <input asp-for="QuizTitle" type="hidden" />
-    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-    @for (var i = 0; i < Model.Questions.Count; i++)
-    {
-        <div class="card shadow-sm mb-3">
-            <div class="card-body">
-                <input asp-for="Questions[i].QuestionId" type="hidden" />
-                <input asp-for="Questions[i].Text" type="hidden" />
-                <h2 class="h5">@(i + 1). @Model.Questions[i].Text</h2>
-                @foreach (var option in Model.Questions[i].Options)
+
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--gray-50); font-family: var(--font-sans); }
+    .quiz-container { display: flex; min-height: 100vh; }
+    .quiz-sidebar { width: 260px; background: white; border-right: 1px solid var(--gray-200); padding: 1.5rem; position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; z-index: 100; display: flex; flex-direction: column; }
+    .quiz-main { flex: 1; margin-left: 260px; padding: 1.5rem 2rem 3rem; }
+    .quiz-top-bar { position: sticky; top: 0; z-index: 90; background: white; border-bottom: 1px solid var(--gray-200); padding: 0.75rem 2rem; margin: -1.5rem -2rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+    .timer-display { display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-weight: 700; color: var(--gray-800); padding: 0.5rem 1rem; background: var(--gray-50); border-radius: var(--radius-md); }
+    .timer-display.warning { color: var(--warning); background: rgba(245,158,11,0.1); }
+    .timer-display.danger { color: var(--danger); background: rgba(239,68,68,0.1); animation: pulse 1s infinite; }
+    .quiz-progress { flex: 1; max-width: 300px; }
+    .sidebar-title { font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-500); margin-bottom: 1rem; }
+    .sidebar-quiz-title { font-size: 1.05rem; font-weight: 700; color: var(--gray-900); margin-bottom: 0.25rem; }
+    .sidebar-meta { font-size: 0.8rem; color: var(--gray-500); margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--gray-100); }
+    .question-nav { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin-bottom: 1.5rem; flex: 1; overflow-y: auto; }
+    .question-nav-btn { width: 100%; aspect-ratio: 1; border: 2px solid var(--gray-200); border-radius: var(--radius-sm); background: white; font-weight: 700; font-size: 0.85rem; color: var(--gray-600); cursor: pointer; transition: all var(--transition-fast); display: flex; align-items: center; justify-content: center; }
+    .question-nav-btn:hover { border-color: var(--primary-light); color: var(--primary); }
+    .question-nav-btn.active { border-color: var(--primary); background: var(--primary); color: white; }
+    .question-nav-btn.answered { border-color: var(--success); background: rgba(16,185,129,0.1); color: var(--success-dark); }
+    .question-nav-btn.flagged { border-color: var(--danger); background: rgba(239,68,68,0.1); color: var(--danger); }
+    .question-nav-btn.answered.active { background: var(--success); color: white; }
+    .question-nav-btn.flagged.active { background: var(--danger); color: white; }
+    .legend { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .legend-item { display: flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: var(--gray-500); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; border: 2px solid var(--gray-200); }
+    .legend-dot.answered { background: rgba(16,185,129,0.3); border-color: var(--success); }
+    .legend-dot.flagged { background: rgba(239,68,68,0.3); border-color: var(--danger); }
+    .quiz-question { scroll-margin-top: 80px; }
+    .flag-btn { background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--gray-400); transition: color var(--transition-fast); }
+    .flag-btn:hover, .flag-btn.flagged { color: var(--danger); }
+</style>
+
+<div class="quiz-container">
+    <!-- Sidebar -->
+    <div class="quiz-sidebar">
+        <div class="sidebar-quiz-title">@Model.QuizTitle</div>
+        <div class="sidebar-meta">@Model.Questions.Count Questions</div>
+        <div class="sidebar-title">Question Navigation</div>
+        <div class="question-nav" id="questionNav">
+            @for (var i = 0; i < Model.Questions.Count; i++)
+            {
+                <button type="button" class="question-nav-btn" data-index="@i" onclick="scrollToQuestion(@i)" title="Question @(i+1)">@(i + 1)</button>
+            }
+        </div>
+        <div class="legend">
+            <div class="legend-item"><span class="legend-dot answered"></span> Answered</div>
+            <div class="legend-item"><span class="legend-dot flagged"></span> Flagged</div>
+            <div class="legend-item"><span class="legend-dot"></span> Unanswered</div>
+        </div>
+        <div style="margin-top:auto; padding-top:1rem; border-top:1px solid var(--gray-100);">
+            <button type="button" class="btn btn-danger w-100" onclick="confirmSubmit()">
+                <i class="fas fa-paper-plane me-2"></i>Submit Quiz
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="quiz-main">
+        <div class="quiz-top-bar">
+            <div class="timer-display" id="timerDisplay">
+                <i class="fas fa-clock"></i>
+                <span id="timerText">@timeLimit:00</span>
+            </div>
+            <div class="quiz-progress">
+                <div class="progress">
+                    <div class="progress-bar" id="progressBar" style="width:0%"></div>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <span style="font-size:0.85rem; color:var(--gray-500);" id="answeredCount">0 / @Model.Questions.Count answered</span>
+                @if (requireFullscreen)
                 {
-                    <div class="form-check my-2">
-                        <input class="form-check-input" type="radio" asp-for="Questions[i].SelectedOptionId" value="@option.Id" id="q@Model.Questions[i].QuestionId-@option.Id" />
-                        <label class="form-check-label" for="q@Model.Questions[i].QuestionId-@option.Id"><strong>@option.Label.</strong> @option.Text</label>
-                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="enterFullscreen()">
+                        <i class="fas fa-expand me-1"></i>Fullscreen
+                    </button>
                 }
-                <span asp-validation-for="Questions[i].SelectedOptionId" class="text-danger"></span>
             </div>
         </div>
-    }
-    <button type="submit" class="btn btn-primary">Submit Quiz</button>
-</form>
-@section Scripts { <partial name="_ValidationScriptsPartial" /> }
+
+        <form asp-action="Attempt" method="post" id="quizForm">
+            <input asp-for="QuizId" type="hidden" />
+            <input asp-for="QuizTitle" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            @for (var i = 0; i < Model.Questions.Count; i++)
+            {
+                <div class="card question-card quiz-question" id="question-@i" data-index="@i">
+                    <div class="card-body">
+                        <input asp-for="Questions[i].QuestionId" type="hidden" />
+                        <input asp-for="Questions[i].Text" type="hidden" />
+                        <input asp-for="Questions[i].QuestionType" type="hidden" />
+                        <input asp-for="Questions[i].Marks" type="hidden" />
+                        <input asp-for="Questions[i].IsRequired" type="hidden" />
+
+                        <div class="d-flex align-items-start justify-content-between mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="question-number">@(i + 1)</span>
+                                <div>
+                                    <span class="question-text">@Model.Questions[i].Text</span>
+                                    <span class="badge text-bg-light ms-2" style="font-size:0.7rem;">@(Model.Questions[i].Marks) @(Model.Questions[i].Marks == 1 ? "mark" : "marks")</span>
+                                    <span class="badge text-bg-secondary ms-1" style="font-size:0.7rem;">@Model.Questions[i].QuestionType</span>
+                                </div>
+                            </div>
+                            <button type="button" class="flag-btn" data-question="@i" onclick="toggleFlag(@i)" title="Flag for review">
+                                <i class="fas fa-flag"></i>
+                            </button>
+                        </div>
+
+                        @if (Model.Questions[i].QuestionType == "MCQ" || Model.Questions[i].QuestionType == "TrueFalse")
+                        {
+                            var displayOptions = Model.Questions[i].QuestionType == "TrueFalse"
+                                ? Model.Questions[i].Options.Where(o => !string.IsNullOrWhiteSpace(o.Text)).ToList()
+                                : Model.Questions[i].Options;
+                            <input asp-for="Questions[i].SelectedOptionId" type="hidden" class="option-hidden-input" data-question="@i" />
+                            @for (var j = 0; j < displayOptions.Count; j++)
+                            {
+                                var option = displayOptions[j];
+                                <div class="option-item" data-question="@i" data-option-id="@option.Id" onclick="selectOption(@i, @option.Id)">
+                                    <span class="option-label">@option.Label</span>
+                                    <span>@option.Text</span>
+                                </div>
+                            }
+                        }
+                        else if (Model.Questions[i].QuestionType == "ShortAnswer")
+                        {
+                            <textarea asp-for="Questions[i].TextAnswer" class="form-control text-answer" data-question="@i"
+                                placeholder="Type your answer here..." maxlength="500"
+                                style="min-height:80px; max-height:150px;"
+                                oninput="updateTextAnswer(@i, this.value)"></textarea>
+                            <small class="text-muted">Maximum 500 characters</small>
+                        }
+                        else if (Model.Questions[i].QuestionType == "LongAnswer")
+                        {
+                            <textarea asp-for="Questions[i].TextAnswer" class="form-control text-answer" data-question="@i"
+                                placeholder="Type your detailed answer here..." maxlength="2000"
+                                style="min-height:150px; max-height:300px;"
+                                oninput="updateTextAnswer(@i, this.value)"></textarea>
+                            <small class="text-muted">Maximum 2000 characters</small>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Hidden inputs for flagged questions -->
+            <div id="flaggedInputs"></div>
+
+            <div class="text-center mt-4 mb-4">
+                <button type="button" class="btn btn-danger btn-lg" onclick="confirmSubmit()">
+                    <i class="fas fa-paper-plane me-2"></i>Submit Quiz
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function() {
+            // --- State ---
+            const totalQuestions = @Model.Questions.Count;
+            const timeLimitMinutes = @timeLimit;
+            const totalSeconds = timeLimitMinutes * 60;
+            let remainingSeconds = totalSeconds;
+            let timerInterval;
+            const flagged = new Set();
+            const answered = new Set();
+
+            // --- Timer ---
+            function startTimer() {
+                timerInterval = setInterval(function() {
+                    remainingSeconds--;
+                    updateTimerDisplay();
+                    if (remainingSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        document.getElementById('quizForm').submit();
+                    }
+                }, 1000);
+            }
+
+            function updateTimerDisplay() {
+                const mins = Math.floor(remainingSeconds / 60);
+                const secs = remainingSeconds % 60;
+                const text = mins + ':' + (secs < 10 ? '0' : '') + secs;
+                const el = document.getElementById('timerText');
+                el.textContent = text;
+                const display = document.getElementById('timerDisplay');
+                display.classList.remove('warning', 'danger');
+                if (remainingSeconds <= 60) display.classList.add('danger');
+                else if (remainingSeconds <= 300) display.classList.add('warning');
+            }
+
+            // --- Question Navigation ---
+            window.scrollToQuestion = function(idx) {
+                const el = document.getElementById('question-' + idx);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                updateActiveNav(idx);
+            };
+
+            function updateActiveNav(idx) {
+                document.querySelectorAll('.question-nav-btn').forEach(function(btn) {
+                    btn.classList.remove('active');
+                });
+                const btn = document.querySelector('.question-nav-btn[data-index="' + idx + '"]');
+                if (btn) btn.classList.add('active');
+            }
+
+            function updateNavButtons() {
+                document.querySelectorAll('.question-nav-btn').forEach(function(btn) {
+                    const idx = parseInt(btn.dataset.index);
+                    btn.classList.remove('answered', 'flagged');
+                    if (flagged.has(idx)) btn.classList.add('flagged');
+                    else if (answered.has(idx)) btn.classList.add('answered');
+                });
+            }
+
+            function updateProgressBar() {
+                const pct = totalQuestions > 0 ? (answered.size / totalQuestions * 100) : 0;
+                document.getElementById('progressBar').style.width = pct + '%';
+                document.getElementById('answeredCount').textContent = answered.size + ' / ' + totalQuestions + ' answered';
+            }
+
+            // --- Option Selection ---
+            window.selectOption = function(qIdx, optId) {
+                const hidden = document.querySelector('.option-hidden-input[data-question="' + qIdx + '"]');
+                if (hidden) hidden.value = optId;
+                document.querySelectorAll('.option-item[data-question="' + qIdx + '"]').forEach(function(item) {
+                    item.classList.remove('selected');
+                });
+                const selected = document.querySelector('.option-item[data-question="' + qIdx + '"][data-option-id="' + optId + '"]');
+                if (selected) selected.classList.add('selected');
+                answered.add(qIdx);
+                updateNavButtons();
+                updateProgressBar();
+            };
+
+            // --- Text Answers ---
+            window.updateTextAnswer = function(qIdx, val) {
+                if (val && val.trim().length > 0) answered.add(qIdx);
+                else answered.delete(qIdx);
+                updateNavButtons();
+                updateProgressBar();
+            };
+
+            // --- Flag ---
+            window.toggleFlag = function(qIdx) {
+                if (flagged.has(qIdx)) flagged.delete(qIdx);
+                else flagged.add(qIdx);
+                const btn = document.querySelector('.flag-btn[data-question="' + qIdx + '"]');
+                if (btn) btn.classList.toggle('flagged');
+                updateNavButtons();
+            };
+
+            // --- Scroll spy to highlight current question ---
+            function setupScrollSpy() {
+                const questions = document.querySelectorAll('.quiz-question');
+                const observer = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            const idx = parseInt(entry.target.dataset.index);
+                            updateActiveNav(idx);
+                        }
+                    });
+                }, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+                questions.forEach(function(q) { observer.observe(q); });
+            }
+
+            // --- Fullscreen ---
+            window.enterFullscreen = function() {
+                const el = document.documentElement;
+                if (el.requestFullscreen) el.requestFullscreen();
+                else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+            };
+
+            if (@(requireFullscreen ? "true" : "false")) {
+                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                    enterFullscreen();
+                }
+                document.addEventListener('fullscreenchange', handleFullscreenChange);
+                document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            }
+
+            let fullscreenExitCount = 0;
+            function handleFullscreenChange() {
+                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                    fullscreenExitCount++;
+                    if (fullscreenExitCount <= @maxFullscreenExits) {
+                        alert('Please stay in fullscreen mode. Warning ' + fullscreenExitCount + ' of @maxFullscreenExits.');
+                        enterFullscreen();
+                    }
+                }
+            }
+
+            // --- Anti-Cheating ---
+            @if (enableAntiCheating)
+            {
+                <text>
+                let tabSwitchCount = 0;
+                let windowChangeCount = 0;
+                let copyCount = 0;
+                let pasteCount = 0;
+                let rightClickCount = 0;
+
+                document.addEventListener('visibilitychange', function() {
+                    if (document.hidden) {
+                        tabSwitchCount++;
+                        logViolation('TabSwitch', tabSwitchCount);
+                    }
+                });
+
+                window.addEventListener('blur', function() {
+                    windowChangeCount++;
+                    logViolation('WindowChange', windowChangeCount);
+                });
+
+                document.addEventListener('copy', function(e) {
+                    copyCount++;
+                    if (copyCount > @maxCopyAttempts) e.preventDefault();
+                }, { capture: true });
+
+                document.addEventListener('paste', function(e) {
+                    pasteCount++;
+                    if (pasteCount > @maxPasteAttempts) e.preventDefault();
+                }, { capture: true });
+
+                document.addEventListener('contextmenu', function(e) {
+                    rightClickCount++;
+                    if (rightClickCount > @maxRightClicks) e.preventDefault();
+                });
+
+                function logViolation(type, count) {
+                    fetch('/Student/LogViolation', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ attemptId: @Model.QuizId, eventType: type, count: count })
+                    }).catch(function() {});
+                }
+                </text>
+            }
+
+            // --- Submit ---
+            window.confirmSubmit = function() {
+                const unanswered = totalQuestions - answered.size;
+                let msg = 'Are you sure you want to submit?';
+                if (unanswered > 0) msg = 'You have ' + unanswered + ' unanswered question(s). Are you sure?';
+                if (confirm(msg)) {
+                    clearInterval(timerInterval);
+                    document.getElementById('quizForm').submit();
+                }
+            };
+
+            // --- Init ---
+            startTimer();
+            setupScrollSpy();
+            updateProgressBar();
+            answered.forEach(function(q) {
+                const hidden = document.querySelector('.option-hidden-input[data-question="' + q + '"]');
+                if (hidden && hidden.value) {
+                    const item = document.querySelector('.option-item[data-question="' + q + '"][data-option-id="' + hidden.value + '"]');
+                    if (item) item.classList.add('selected');
+                }
+            });
+            updateNavButtons();
+        })();
+    </script>
+}

@@ -1,0 +1,192 @@
+@model MonitoringDetailViewModel
+@{
+    ViewData["Title"] = "Attempt Detail";
+}
+
+<div class="dashboard-header">
+    <h1><i class="fas fa-user-check me-2 text-gradient"></i>Attempt Detail</h1>
+    <a class="btn btn-outline-secondary" asp-action="Monitor" asp-route-id="@Model.Entry.QuizId"><i class="fas fa-arrow-left me-1"></i>Back to Monitor</a>
+</div>
+
+<!-- Student Info -->
+<div class="card mb-4 animate-fadeInUp">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+                <div style="width:64px; height:64px; background:var(--gradient-primary); border-radius:var(--radius-lg); display:flex; align-items:center; justify-content:center; margin:0 auto;">
+                    <i class="fas fa-user-graduate fa-lg text-white"></i>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <h4 class="mb-1 fw-bold">@Model.Entry.StudentName</h4>
+                <p class="text-muted mb-0"><i class="fas fa-hashtag me-1"></i>@(Model.Entry.RollNumber ?? "N/A")</p>
+            </div>
+            <div class="col-md-5">
+                <div class="row text-center">
+                    <div class="col">
+                        <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Score</div>
+                        <div class="fw-bold" style="font-size:1.25rem;">@Model.Entry.Score / @Model.Entry.MaxScore</div>
+                    </div>
+                    <div class="col">
+                        <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Duration</div>
+                        <div class="fw-bold" style="font-size:1.25rem;">@Model.Entry.TotalTime</div>
+                    </div>
+                    <div class="col">
+                        <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Status</div>
+                        <div>
+                            @switch (Model.Entry.Status)
+                            {
+                                case "InProgress":
+                                    <span class="badge text-bg-primary"><i class="fas fa-spinner me-1"></i>In Progress</span>
+                                    break;
+                                case "Completed":
+                                    <span class="badge text-bg-success"><i class="fas fa-check-circle me-1"></i>Completed</span>
+                                    break;
+                                case "Failed":
+                                    <span class="badge text-bg-danger"><i class="fas fa-times-circle me-1"></i>Failed</span>
+                                    break;
+                                default:
+                                    <span class="badge text-bg-secondary">@Model.Entry.Status</span>
+                                    break;
+                            }
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Violations</div>
+                        <div class="fw-bold" style="font-size:1.25rem; @(Model.Entry.ViolationCount > 0 ? "color:var(--danger);" : "")">@Model.Entry.ViolationCount</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 1: Answers -->
+@if (Model.Answers.Any())
+{
+    <h5 class="fw-bold mb-3" style="color:var(--gray-700);"><i class="fas fa-check-double me-2 text-gradient"></i>Answers</h5>
+    <div class="card mb-4" style="border:none; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm);">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-question me-1"></i>Question</th>
+                        <th><i class="fas fa-hand-pointer me-1"></i>Selected Answer</th>
+                        <th><i class="fas fa-check me-1"></i>Correct Answer</th>
+                        <th><i class="fas fa-circle-check me-1"></i>Status</th>
+                        <th><i class="fas fa-star me-1"></i>Marks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var ans in Model.Answers)
+                {
+                    <tr>
+                        <td style="font-weight:500; max-width:300px;">@ans.QuestionText</td>
+                        <td><span class="badge text-bg-primary">@(ans.SelectedAnswer ?? "—")</span></td>
+                        <td><span class="badge text-bg-success">@(ans.CorrectAnswer ?? "—")</span></td>
+                        <td>
+                            @if (ans.IsCorrect)
+                            {
+                                <span class="badge text-bg-success"><i class="fas fa-check me-1"></i>Correct</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-danger"><i class="fas fa-times me-1"></i>Wrong</span>
+                            }
+                        </td>
+                        <td style="font-weight:700;">@ans.Marks</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<!-- Section 2: Manual Answers -->
+@if (Model.ManualAnswers.Any())
+{
+    <h5 class="fw-bold mb-3" style="color:var(--gray-700);"><i class="fas fa-pen-fancy me-2 text-gradient"></i>Subjective Answers</h5>
+    <div class="card mb-4" style="border:none; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm);">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-question me-1"></i>Question</th>
+                        <th><i class="fas fa-align-left me-1"></i>Student Answer</th>
+                        <th><i class="fas fa-star me-1"></i>Max Marks</th>
+                        <th><i class="fas fa-pen me-1"></i>Awarded Marks</th>
+                        <th><i class="fas fa-comment me-1"></i>Feedback</th>
+                        <th><i class="fas fa-toggle-on me-1"></i>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var ma in Model.ManualAnswers)
+                {
+                    <tr>
+                        <td style="font-weight:500; max-width:200px;">@ma.QuestionText</td>
+                        <td style="max-width:300px;">
+                            <textarea class="form-control" rows="2" readonly style="min-height:auto; font-size:0.85rem;">@ma.StudentAnswer</textarea>
+                        </td>
+                        <td style="font-weight:700;">@ma.MaxMarks</td>
+                        <td style="font-weight:700;">@(ma.AwardedMarks?.ToString("0.0") ?? "—")</td>
+                        <td style="color:var(--gray-500); font-size:0.85rem;">@(ma.TeacherFeedback ?? "—")</td>
+                        <td>
+                            @if (ma.IsGraded)
+                            {
+                                <span class="badge text-bg-success"><i class="fas fa-check me-1"></i>Graded</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-warning"><i class="fas fa-clock me-1"></i>Pending</span>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<!-- Section 3: Violations -->
+@if (Model.Violations.Any())
+{
+    <h5 class="fw-bold mb-3" style="color:var(--gray-700);"><i class="fas fa-shield-halved me-2 text-gradient"></i>Violations</h5>
+    <div class="card mb-4" style="border:none; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm);">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-tag me-1"></i>Event Type</th>
+                        <th><i class="fas fa-clock me-1"></i>Time</th>
+                        <th><i class="fas fa-hashtag me-1"></i>Count</th>
+                        <th><i class="fas fa-info-circle me-1"></i>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var v in Model.Violations)
+                {
+                    <tr>
+                        <td>
+                            <span class="badge text-bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>@v.EventType</span>
+                        </td>
+                        <td style="font-size:0.85rem;">@v.OccurredAt.ToString("MMM dd, hh:mm:ss tt")</td>
+                        <td style="font-weight:700;">@v.Count</td>
+                        <td style="color:var(--gray-500); font-size:0.85rem;">@(v.Details ?? "—")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@if (!Model.Answers.Any() && !Model.ManualAnswers.Any() && !Model.Violations.Any())
+{
+    <div class="empty-state">
+        <div class="empty-icon"><i class="fas fa-file-circle-question"></i></div>
+        <h3>No data available</h3>
+        <p>No answers or violations recorded for this attempt.</p>
+    </div>
+}

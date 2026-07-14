@@ -5,13 +5,13 @@ namespace AiQuiz.Data;
 
 public static class DbInitializer
 {
-    public static async Task SeedAsync(IServiceProvider services)
+    public static async Task InitializeAsync(IServiceProvider services)
     {
         using var scope = services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-        await context.Database.MigrateAsync();
+        await context.Database.EnsureCreatedAsync();
 
         foreach (var role in new[] { "Teacher", "Student" })
         {
