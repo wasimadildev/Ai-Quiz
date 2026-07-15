@@ -161,6 +161,14 @@ public class StudentController : Controller
             }
         }
 
+        var cancelledAttempt = await _context.StudentAttempts
+            .Include(a => a.Quiz)
+            .FirstOrDefaultAsync(a => a.QuizId == id && a.StudentId == studentId && a.Status == "Cancelled");
+        if (cancelledAttempt != null)
+        {
+            return View("QuizCancelled", cancelledAttempt);
+        }
+
         if (settings?.OneAttemptOnly == true)
         {
             var alreadyAttempted = await _context.StudentAttempts
@@ -172,8 +180,31 @@ public class StudentController : Controller
             }
         }
 
+        var existingAttempt = await _context.StudentAttempts
+            .FirstOrDefaultAsync(a => a.QuizId == id && a.StudentId == studentId && a.Status == "InProgress");
+
+        int attemptId;
+        if (existingAttempt != null)
+        {
+            attemptId = existingAttempt.Id;
+        }
+        else
+        {
+            var newAttempt = new StudentAttempt
+            {
+                QuizId = quiz.Id,
+                StudentId = studentId,
+                StartedAt = DateTime.UtcNow,
+                Status = "InProgress"
+            };
+            _context.StudentAttempts.Add(newAttempt);
+            await _context.SaveChangesAsync();
+            attemptId = newAttempt.Id;
+        }
+
         var model = new AttemptQuizViewModel
         {
+            AttemptId = attemptId,
             QuizId = quiz.Id,
             QuizTitle = quiz.Title,
             RequiresPassword = settings?.HasPassword == true,
@@ -231,18 +262,21 @@ public class StudentController : Controller
             return View(model);
         }
 
+        var attempt = await _context.StudentAttempts
+            .FirstOrDefaultAsync(a => a.Id == model.AttemptId && a.StudentId == studentId && a.Status == "InProgress");
+
+        if (attempt == null)
+        {
+            TempData["Error"] = "No active attempt found. Your attempt may have been cancelled.";
+            return RedirectToAction(nameof(Dashboard));
+        }
+
         var settings = quiz.Settings;
         var negativeMarking = settings?.NegativeMarking == true;
         var negativeFactor = settings?.NegativeMarkFactor ?? 0.25m;
 
-        var attempt = new StudentAttempt
-        {
-            QuizId = quiz.Id,
-            StudentId = studentId,
-            StartedAt = DateTime.UtcNow,
-            SubmittedAt = DateTime.UtcNow,
-            Status = "Completed"
-        };
+        attempt.SubmittedAt = DateTime.UtcNow;
+        attempt.Status = "Completed";
 
         decimal autoMarksObtained = 0;
         decimal maxAutoMarks = 0;
@@ -329,7 +363,6 @@ public class StudentController : Controller
             CreatedAt = DateTime.UtcNow
         };
 
-        _context.StudentAttempts.Add(attempt);
         await _context.SaveChangesAsync();
 
         if (hasSubjective)
@@ -401,6 +434,76 @@ public class StudentController : Controller
         notification.IsRead = true;
         await _context.SaveChangesAsync();
 
+        return Ok();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CancelAttempt(int attemptId)
+    {
+        var studentId = _userManager.GetUserId(User)!;
+
+        var attempt = await _context.StudentAttempts
+            .Include(a => a.Quiz)
+                .ThenInclude(q => q!.Teacher)
+            .FirstOrDefaultAsync(a => a.Id == attemptId && a.StudentId == studentId && a.Status == "InProgress");
+
+        if (attempt == null)
+            return Ok();
+
+        attempt.Status = "Cancelled";
+        attempt.SubmittedAt = DateTime.UtcNow;
+
+        _context.StudentNotifications.Add(new StudentNotification
+        {
+            StudentId = studentId,
+            Title = "Quiz Cancelled",
+            Message = "You exited the quiz before submitting your answers. According to the quiz rules, your attempt has been cancelled and marked as Failed. Please contact your instructor if you believe this was a mistake.",
+            Type = "QuizCancelled",
+            QuizId = attempt.QuizId,
+            IsRead = false,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        if (attempt.Quiz?.TeacherId != null)
+        {
+            var student = await _userManager.FindByIdAsync(studentId);
+            _context.StudentNotifications.Add(new StudentNotification
+            {
+                StudentId = attempt.Quiz.TeacherId,
+                Title = "Quiz Attempt Cancelled",
+                Message = $"Student {student?.FullName ?? "Unknown"} exited the quiz \"{attempt.Quiz.Title}\" before submission. The attempt has been automatically cancelled and marked as Failed.",
+                Type = "QuizCancelled",
+                QuizId = attempt.QuizId,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        await _context.SaveChangesAsync();
+        return Ok();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> LogViolation([FromBody] LogViolationRequest request)
+    {
+        var studentId = _userManager.GetUserId(User)!;
+
+        var attempt = await _context.StudentAttempts
+            .FirstOrDefaultAsync(a => a.QuizId == request.AttemptId && a.StudentId == studentId && a.Status == "InProgress");
+
+        if (attempt == null)
+            return Ok();
+
+        _context.QuizViolations.Add(new QuizViolation
+        {
+            StudentAttemptId = attempt.Id,
+            EventType = request.EventType,
+            Count = request.Count,
+            OccurredAt = DateTime.UtcNow
+        });
+
+        attempt.ViolationCount++;
+        await _context.SaveChangesAsync();
         return Ok();
     }
 

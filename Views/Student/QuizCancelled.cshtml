@@ -1,0 +1,140 @@
+@model AiQuiz.Models.StudentAttempt
+@{
+    ViewData["Title"] = "Quiz Cancelled";
+    ViewData["HideLayout"] = true;
+}
+
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: 'Inter', sans-serif;
+    }
+    .cancel-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+        padding: 3rem;
+        max-width: 560px;
+        width: 90%;
+        text-align: center;
+        animation: slideUp 0.5s ease;
+    }
+    @@keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .cancel-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 8px 24px rgba(239,68,68,0.3);
+    }
+    .cancel-icon i { font-size: 2rem; color: white; }
+    .cancel-card h1 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1a1a2e;
+        margin-bottom: 0.5rem;
+    }
+    .quiz-name {
+        font-size: 0.95rem;
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .cancel-message {
+        font-size: 0.95rem;
+        color: #374151;
+        line-height: 1.7;
+        margin-bottom: 2rem;
+        text-align: left;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        padding: 1.25rem;
+    }
+    .cancel-message i {
+        color: #dc2626;
+        margin-right: 0.5rem;
+    }
+    .cancel-details {
+        text-align: left;
+        margin-bottom: 2rem;
+    }
+    .cancel-details .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 0.85rem;
+    }
+    .cancel-details .detail-label { color: #6b7280; }
+    .cancel-details .detail-value { font-weight: 600; color: #1a1a2e; }
+    .btn-home {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.8rem 2rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-home:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+        color: white;
+    }
+</style>
+
+<div class="cancel-card">
+    <div class="cancel-icon">
+        <i class="fas fa-times"></i>
+    </div>
+    <h1>Quiz Cancelled</h1>
+    <div class="quiz-name">
+        <i class="fas fa-book me-1"></i>@Model.Quiz?.Title
+    </div>
+
+    <div class="cancel-message">
+        <p>
+            <i class="fas fa-exclamation-triangle"></i>
+            You exited the quiz before submitting your answers. According to the quiz rules, your attempt has been cancelled and marked as <strong>Failed</strong>. Please contact your instructor if you believe this was a mistake.
+        </p>
+    </div>
+
+    <div class="cancel-details">
+        <div class="detail-row">
+            <span class="detail-label">Subject</span>
+            <span class="detail-value">@(Model.Quiz?.Subject ?? "N/A")</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Started At</span>
+            <span class="detail-value">@Model.StartedAt.ToString("MMM dd, yyyy HH:mm")</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Status</span>
+            <span class="detail-value" style="color:#dc2626;">Cancelled</span>
+        </div>
+    </div>
+
+    <a asp-action="Dashboard" class="btn-home">
+        <i class="fas fa-home"></i>Back to Dashboard
+    </a>
+</div>

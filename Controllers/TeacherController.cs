@@ -700,9 +700,28 @@ public class TeacherController : Controller
         return RedirectToAction(nameof(Review), new { attemptId });
     }
 
-    public IActionResult Students()
+    public async Task<IActionResult> Students()
     {
-        return View();
+        var students = await _userManager.GetUsersInRoleAsync("Student");
+        return View(students);
+    }
+
+    public async Task<IActionResult> StudentDetail(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return NotFound();
+
+        var student = await _userManager.FindByIdAsync(id);
+        if (student == null) return NotFound();
+
+        var teacherId = _userManager.GetUserId(User)!;
+        var attempts = await _context.StudentAttempts
+            .Include(a => a.Quiz)
+            .Where(a => a.StudentId == id && a.Quiz.TeacherId == teacherId)
+            .OrderByDescending(a => a.StartedAt)
+            .ToListAsync();
+
+        ViewBag.Student = student;
+        return View(attempts);
     }
 
     [HttpGet]

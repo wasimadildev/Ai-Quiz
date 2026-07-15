@@ -211,9 +211,11 @@ public class AIService : IAIService
                         $"Generate {input.NumberOfQuestions} {input.Difficulty} MCQ questions for a university quiz.",
                         $"Subject: {input.Subject}",
                         $"Topic: {input.Topic}",
+                        "IMPORTANT: Each question MUST have non-empty optionA, optionB, optionC, and optionD fields with actual answer text.",
                         "Return ONLY valid JSON in this exact shape:",
-                        "{\"questions\":[{\"question\":\"...\",\"optionA\":\"...\",\"optionB\":\"...\",\"optionC\":\"...\",\"optionD\":\"...\",\"correctAnswer\":\"A\",\"explanation\":\"...\"}]}",
+                        "{\"questions\":[{\"question\":\"What is 2+2?\",\"optionA\":\"3\",\"optionB\":\"4\",\"optionC\":\"5\",\"optionD\":\"6\",\"correctAnswer\":\"B\",\"explanation\":\"2+2 equals 4.\"}]}",
                         "correctAnswer must be exactly A, B, C, or D.",
+                        "Do NOT return empty strings for any option. Each option must have real answer text.",
                         "Do not include any text before or after the JSON."
                     }));
         }

@@ -388,25 +388,30 @@
         var optionsSection = block.querySelector('.options-section');
         var correctSelect = block.querySelector('.correct-answer-select');
         var type = select.value;
+        var savedA = block.querySelector('input[name$="OptionA"]')?.value || '';
+        var savedB = block.querySelector('input[name$="OptionB"]')?.value || '';
+        var savedC = block.querySelector('input[name$="OptionC"]')?.value || '';
+        var savedD = block.querySelector('input[name$="OptionD"]')?.value || '';
+        var savedCorrect = correctSelect.value;
 
         if (type === 'MCQ') {
             optionsSection.style.display = '';
             optionsSection.querySelector('.mcq-options').innerHTML = `
                 <div class="col-md-6 mb-3">
                     <label class="form-label"><span style="color:var(--primary); font-weight:700;">A.</span> Option A</label>
-                    <input name="${getBlockName(block)}OptionA" class="form-control option-input" placeholder="Option A" />
+                    <input name="${getBlockName(block)}OptionA" class="form-control option-input" placeholder="Option A" value="${escapeAttr(savedA)}" />
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label"><span style="color:var(--primary); font-weight:700;">B.</span> Option B</label>
-                    <input name="${getBlockName(block)}OptionB" class="form-control option-input" placeholder="Option B" />
+                    <input name="${getBlockName(block)}OptionB" class="form-control option-input" placeholder="Option B" value="${escapeAttr(savedB)}" />
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label"><span style="color:var(--primary); font-weight:700;">C.</span> Option C</label>
-                    <input name="${getBlockName(block)}OptionC" class="form-control option-input" placeholder="Option C" />
+                    <input name="${getBlockName(block)}OptionC" class="form-control option-input" placeholder="Option C" value="${escapeAttr(savedC)}" />
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label"><span style="color:var(--primary); font-weight:700;">D.</span> Option D</label>
-                    <input name="${getBlockName(block)}OptionD" class="form-control option-input" placeholder="Option D" />
+                    <input name="${getBlockName(block)}OptionD" class="form-control option-input" placeholder="Option D" value="${escapeAttr(savedD)}" />
                 </div>`;
             correctSelect.innerHTML = '<option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>';
         } else if (type === 'TrueFalse') {
@@ -425,6 +430,14 @@
             optionsSection.style.display = 'none';
             correctSelect.innerHTML = '<option value="">N/A</option>';
         }
+
+        if (savedCorrect && correctSelect.querySelector('option[value="' + savedCorrect + '"]')) {
+            correctSelect.value = savedCorrect;
+        }
+    }
+
+    function escapeAttr(str) {
+        return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
     function getBlockName(block) {
@@ -455,7 +468,26 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.question-type-select').forEach(function (sel) {
-            toggleOptions(sel);
+            var block = sel.closest('.question-form-block');
+            var type = sel.value;
+            var optionsSection = block.querySelector('.options-section');
+            var correctSelect = block.querySelector('.correct-answer-select');
+            var savedCorrect = correctSelect.value;
+
+            if (type === 'MCQ') {
+                optionsSection.style.display = '';
+                correctSelect.innerHTML = '<option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>';
+            } else if (type === 'TrueFalse') {
+                optionsSection.style.display = '';
+                correctSelect.innerHTML = '<option value="A">True</option><option value="B">False</option>';
+            } else {
+                optionsSection.style.display = 'none';
+                correctSelect.innerHTML = '<option value="">N/A</option>';
+            }
+
+            if (savedCorrect) {
+                correctSelect.value = savedCorrect;
+            }
         });
     });
 </script>

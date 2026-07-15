@@ -94,6 +94,7 @@
 
         <form asp-action="Attempt" method="post" id="quizForm">
             <input asp-for="QuizId" type="hidden" />
+            <input asp-for="AttemptId" type="hidden" />
             <input asp-for="QuizTitle" type="hidden" />
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
@@ -123,9 +124,7 @@
 
                         @if (Model.Questions[i].QuestionType == "MCQ" || Model.Questions[i].QuestionType == "TrueFalse")
                         {
-                            var displayOptions = Model.Questions[i].QuestionType == "TrueFalse"
-                                ? Model.Questions[i].Options.Where(o => !string.IsNullOrWhiteSpace(o.Text)).ToList()
-                                : Model.Questions[i].Options;
+                            var displayOptions = Model.Questions[i].Options.Where(o => !string.IsNullOrWhiteSpace(o.Text)).ToList();
                             <input asp-for="Questions[i].SelectedOptionId" type="hidden" class="option-hidden-input" data-question="@i" />
                             @for (var j = 0; j < displayOptions.Count; j++)
                             {
@@ -180,6 +179,27 @@
             let timerInterval;
             const flagged = new Set();
             const answered = new Set();
+            const attemptId = @Model.AttemptId;
+            let quizSubmitted = false;
+
+            // --- Auto-Cancel on Exit ---
+            function cancelAttempt() {
+                if (quizSubmitted) return;
+                try {
+                    var blob = new Blob([], { type: 'application/json' });
+                    navigator.sendBeacon('/Student/CancelAttempt?attemptId=' + attemptId, blob);
+                } catch(e) {}
+            }
+
+            window.addEventListener('beforeunload', function(e) {
+                cancelAttempt();
+            });
+
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    cancelAttempt();
+                }
+            });
 
             // --- Timer ---
             function startTimer() {
@@ -188,6 +208,7 @@
                     updateTimerDisplay();
                     if (remainingSeconds <= 0) {
                         clearInterval(timerInterval);
+                        quizSubmitted = true;
                         document.getElementById('quizForm').submit();
                     }
                 }, 1000);
@@ -347,7 +368,7 @@
                     fetch('/Student/LogViolation', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ attemptId: @Model.QuizId, eventType: type, count: count })
+                        body: JSON.stringify({ attemptId: attemptId, eventType: type, count: count })
                     }).catch(function() {});
                 }
                 </text>
@@ -360,6 +381,7 @@
                 if (unanswered > 0) msg = 'You have ' + unanswered + ' unanswered question(s). Are you sure?';
                 if (confirm(msg)) {
                     clearInterval(timerInterval);
+                    quizSubmitted = true;
                     document.getElementById('quizForm').submit();
                 }
             };

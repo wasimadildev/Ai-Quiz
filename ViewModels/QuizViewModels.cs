@@ -130,6 +130,7 @@ public class GenerateQuizViewModel
 
 public class AttemptQuizViewModel
 {
+    public int AttemptId { get; set; }
     public int QuizId { get; set; }
     public string QuizTitle { get; set; } = string.Empty;
     public List<AttemptQuestionViewModel> Questions { get; set; } = new();
@@ -264,4 +265,11 @@ public class JoinQuizViewModel
 
     public string? Password { get; set; }
     public string? ErrorMessage { get; set; }
+}
+
+public class LogViolationRequest
+{
+    public int AttemptId { get; set; }
+    public string EventType { get; set; } = string.Empty;
+    public int Count { get; set; }
 }
